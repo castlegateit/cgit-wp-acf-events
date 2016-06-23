@@ -18,8 +18,8 @@
  *
  * @return array
  */
-function cgit_wp_events_fields($meta_boxes) {
-
+function cgit_wp_events_fields($meta_boxes)
+{
     $date_type = 'date_unix';
     $types = _cmb_available_fields();
 
@@ -113,8 +113,8 @@ add_filter('cmb_meta_boxes', 'cgit_wp_events_fields');
  *
  * @return void
  */
-function cgit_wp_events_save_post($post_id) {
-
+function cgit_wp_events_save_post($post_id)
+{
     if (get_post_type($post_id) != CGIT_EVENTS_POST_TYPE || !isset($_POST['start_date'])) {
         return;
     }

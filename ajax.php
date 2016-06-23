@@ -3,9 +3,9 @@
 /**
  * Enqueue the calendar AJAX javascript
  */
-function cgit_events_scripts_init() {
-
-    wp_enqueue_script('cgit-events-calendar', plugins_url('/js/calendar.js', __FILE__ ), array('jquery'));
+function cgit_events_scripts_init()
+{
+    wp_enqueue_script('cgit-events-calendar', plugins_url('/js/calendar.js', __FILE__), array('jquery'));
 
     /**
      * Define the AJAX handler
@@ -17,7 +17,6 @@ function cgit_events_scripts_init() {
             'ajax_url' => admin_url('admin-ajax.php')
         )
     );
-
 }
 
 add_action('wp_enqueue_scripts', 'cgit_events_scripts_init');
@@ -26,10 +25,9 @@ add_action('wp_enqueue_scripts', 'cgit_events_scripts_init');
 /**
  * AJAX handler function
  */
-function cgit_events_calendar_callback() {
-
+function cgit_events_calendar_callback()
+{
     if (isset($_POST['year']) && isset($_POST['month'])) {
-
         $year = (int)$_POST['year'];
         $month = (int)$_POST['month'];
 
@@ -44,8 +42,7 @@ function cgit_events_calendar_callback() {
             $month
         );
 
-        echo json_encode($calendar->get_ajax());
-
+        echo json_encode($calendar->getAjax());
     }
     wp_die();
 }

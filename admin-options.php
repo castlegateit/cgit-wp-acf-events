@@ -26,8 +26,8 @@ class cgit_wp_events {
  *
  * @return void
  */
-function cgit_wp_events_register_settings() {
-
+function cgit_wp_events_register_settings()
+{
     foreach (cgit_wp_events::$options as $option => $v) {
         register_setting('cgit-events', $option);
     }
@@ -42,8 +42,8 @@ function cgit_wp_events_register_settings() {
  *
  * @return void
  */
-function cgit_wp_events_add_settings_page() {
-
+function cgit_wp_events_add_settings_page()
+{
     // Add page
     add_submenu_page(
         'options-general.php',

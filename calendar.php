@@ -65,7 +65,7 @@ class Cgit_event_calendar {
      */
     public function __construct($year, $month)
     {
-        $this->set_options();
+        $this->setOptions();
 
         // Set year and month
         if (checkdate($month, 1, $year)) {
@@ -89,7 +89,7 @@ class Cgit_event_calendar {
      *
      * @return void
      */
-    public function set_options()
+    public function setOptions()
     {
         // Set options
         $this->options = array(
@@ -183,7 +183,7 @@ class Cgit_event_calendar {
         $out.= "</th>\n";
 
         // Current month
-        $out.= "<th colspan=\"3\" class=\"" . $this->c('cu') . "\">";;
+        $out.= "<th colspan=\"3\" class=\"" . $this->c('cu') . "\">";
             $out.= "<a href=\"";
             $out.= get_post_type_archive_link('event') .$current->format('Y/m');
             $out.= "\"><span>";
@@ -228,15 +228,14 @@ class Cgit_event_calendar {
      *
      * @return string
      */
-    private function days() {
-
+    private function days()
+    {
         // Output variable
         $out = '';
 
         // Loop through and output calendar days
         $i = 1;
-        foreach ($this->get_days($this->year, $this->month) as $day) {
-
+        foreach ($this->getDays($this->year, $this->month) as $day) {
             if ($i == 1) {
                 $out.= "<tr>\n";
             }
@@ -246,18 +245,15 @@ class Cgit_event_calendar {
             $out.= "<td class=\"" . $day['class'] . "\"><a";
 
             if ($day['events']) {
-
                 if (count($day['events']) == 1) {
                     $link = reset($day['events']);
                     $link = $link['permalink'];
-                }
-                else {
+                } else {
                     $link = $day['link'];
                 }
 
                 $out.= " href=\"" . $link . "\">" . $day['date'];
-            }
-            else {
+            } else {
                 $out.= ">" . $day['date'];
             }
 
@@ -284,8 +280,8 @@ class Cgit_event_calendar {
      *
      * @return array
      */
-    private function get_days() {
-
+    private function getDays()
+    {
         // DateTime for now
         $now = new DateTime('now');
 
@@ -301,7 +297,8 @@ class Cgit_event_calendar {
          * to create a 6 row calendar. Monday can change depending on the week
          * start
          */
-        $start->modify('first ' . ucwords($this->week_start) . ' of '
+        $start->modify(
+            'first ' . ucwords($this->week_start) . ' of '
             . $start->format('F') . ' ' . $start->format('Y')
         );
         $start->modify('-7 days');
@@ -325,8 +322,8 @@ class Cgit_event_calendar {
 
 
         global $wpdb;
-        $posts = $wpdb->get_results("
-            SELECT
+        $posts = $wpdb->get_results(
+            "SELECT
 
                 start_meta.meta_value AS event_start,
                 end_meta.meta_value AS event_end,
@@ -373,8 +370,6 @@ class Cgit_event_calendar {
 
         // Loop through and generate day data
         foreach ($daterange as $date) {
-
-
             // Look for events
             $events = array();
 
@@ -383,11 +378,9 @@ class Cgit_event_calendar {
              * current month. This prevents days from the previous and next
              * month from showing events.
              */
-            if ($date->format('m') == $current->format('m'))
-            {
+            if ($date->format('m') == $current->format('m')) {
                 // Any posts for this date?
                 foreach ($posts as $p) {
-
                     $start = get_post_meta($p->ID, 'start_date', true);
                     $end = get_post_meta($p->ID, 'end_date', true);
 
@@ -396,7 +389,6 @@ class Cgit_event_calendar {
                         || ($date->format('Ymd') <= $end
                         && $date->format('Ymd') >= $start)
                     ) {
-
                         $events[] = array(
                             'id' => $p->ID,
                             'permalink' => get_the_permalink($p->ID)
@@ -444,14 +436,14 @@ class Cgit_event_calendar {
      *
      * @return array
      */
-    public function get_ajax() {
-
+    public function getAjax()
+    {
         $current = new DateTime($this->year . '-' . $this->month . '-01');
 
         return array(
             'year' => $this->year,
             'month' => $this->month,
-            'days' => $this->get_days(),
+            'days' => $this->getDays(),
             'current' => $current->format($this->options['current_month'])
         );
     }
@@ -467,14 +459,13 @@ class Cgit_event_calendar {
      * @param string $index Class name key
      * @return string
      */
-    private function c($index) {
-
+    private function c($index)
+    {
         $return = array();
 
         $classes = explode(',', $index);
 
-        foreach ($classes as $class)
-        {
+        foreach ($classes as $class) {
             if (isset($this->class[trim($class)])) {
                 $return[] = $this->options['class_prefix']
                     . $this->class[$class];
@@ -485,5 +476,4 @@ class Cgit_event_calendar {
     }
 
     // -------------------------------------------------------------------------
-
 }

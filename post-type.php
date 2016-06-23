@@ -8,8 +8,8 @@
  *
  * @return void
  */
-function cgit_wp_events_post_type() {
-
+function cgit_wp_events_post_type()
+{
     $labels = array(
         'name' => 'Events',
         'singular_name' => 'Event',
@@ -29,7 +29,6 @@ function cgit_wp_events_post_type() {
     );
 
     foreach (cgit_wp_events::$options as $option => $v) {
-
         if (substr($option, 0, 33) == 'cgit_wp_events_post_type_support_'
             && get_option($option) == 1
         ) {
@@ -73,8 +72,8 @@ add_action('init', 'cgit_wp_events_post_type', 10);
  *
  * @return void
  */
-function cgit_wp_events_taxonomy() {
-
+function cgit_wp_events_taxonomy()
+{
     if (get_option('cgit_wp_events_post_type_support_category') == 1) {
         $labels = array(
             'name' => 'Categories',

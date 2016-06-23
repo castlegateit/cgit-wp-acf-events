@@ -9,8 +9,8 @@
  *
  * @return void
  */
-function cgit_wp_events_apply_rules() {
-
+function cgit_wp_events_apply_rules()
+{
     global $wp_rewrite;
 
     // Get the post type for the archive slug and check it has an archive
@@ -39,7 +39,8 @@ add_filter('init', 'cgit_wp_events_apply_rules');
  *
  * @return array
  */
-function cgit_wp_events_generate_archives($existing_rules) {
+function cgit_wp_events_generate_archives($existing_rules)
+{
     global $wp_rewrite;
 
     $rules = array();
@@ -79,7 +80,6 @@ function cgit_wp_events_generate_archives($existing_rules) {
 
     // Process each rewrite rule
     foreach ($dates as $data) {
-
         $query = 'index.php?post_type=' . CGIT_EVENTS_POST_TYPE;
         $rule = $slug_archive . '/' . $data['rule'];
 
@@ -118,11 +118,9 @@ add_filter('rewrite_rules_array', 'cgit_wp_events_generate_archives');
  *
  * @return void
  */
-function cgit_wp_events_flush_rules() {
-
+function cgit_wp_events_flush_rules()
+{
     global $wp_rewrite;
+
     $wp_rewrite->flush_rules();
-
 }
-
-

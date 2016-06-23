@@ -3,19 +3,21 @@
 /**
  * Add calendar widget
  */
-class CGIT_Events_Calendar_Widget extends WP_Widget {
-
+class CGIT_Events_Calendar_Widget extends WP_Widget
+{
     /**
      * Register widget
      */
-    function __construct() {
-        parent::__construct('cgit_events_calendar_widget', __( 'Events Calendar', 'text_domain' ));
+    public function __construct()
+    {
+        parent::__construct('cgit_events_calendar_widget', __('Events Calendar', 'text_domain'));
     }
 
     /**
      * Display widget content
      */
-    public function widget($args, $instance) {
+    public function widget($args, $instance)
+    {
 
         echo $args['before_widget'];
 
@@ -31,36 +33,34 @@ class CGIT_Events_Calendar_Widget extends WP_Widget {
     /**
      * Display widget settings
      */
-    public function form($instance) {
-
-        $title = !empty( $instance['title'] ) ? $instance['title'] : __('Events Calendar', 'text_domain');
+    public function form($instance)
+    {
+        $title = !empty($instance['title']) ? $instance['title'] : __('Events Calendar', 'text_domain');
         $id = $this->get_field_id('title');
         $name = $this->get_field_name('title');
         $label = __('Title:');
         $value = esc_attr($title);
 
         echo "<p><label for='$id'>$label</label><input type='text' name='$name' id='$id' class='widefat' value='$value' /></p>";
-
     }
 
     /**
      * Save widget settings
      */
-    public function update($new_instance, $old_instance) {
-
+    public function update($new_instance, $old_instance)
+    {
         $instance = array();
         $instance['title'] = (!empty($new_instance['title'])) ? strip_tags($new_instance['title']) : '';
 
         return $instance;
-
     }
-
 }
 
 /**
  * Register widget
  */
-function cgit_wp_events_register_widget() {
+function cgit_wp_events_register_widget()
+{
     register_widget('CGIT_Events_Calendar_Widget');
 }
 

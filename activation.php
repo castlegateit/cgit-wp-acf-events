@@ -9,8 +9,8 @@
  *
  * @return void
  */
-function cgit_wp_events_activate() {
-
+function cgit_wp_events_activate()
+{
     // Set default options
     cgit_wp_events_default_options();
 
@@ -27,11 +27,10 @@ function cgit_wp_events_activate() {
  *
  * @return void
  */
-function cgit_wp_events_default_options() {
-
+function cgit_wp_events_default_options()
+{
     // Set default options
     foreach (cgit_wp_events::$options as $option => $value) {
-
         if (empty(get_option($option))) {
             if (is_array($value)) {
                 foreach ($value as $k => $v) {
@@ -42,9 +41,7 @@ function cgit_wp_events_default_options() {
                 update_option($option, $value);
             }
         }
-
     }
-
 }
 
 
@@ -56,8 +53,8 @@ function cgit_wp_events_default_options() {
  *
  * @return void
  */
-function cgit_wp_events_uninstall() {
-
+function cgit_wp_events_uninstall()
+{
     global $default_options;
 
     // Delete saved options
@@ -67,5 +64,4 @@ function cgit_wp_events_uninstall() {
 
     // Flush rewrite rules
     cgit_wp_events_flush_rules();
-
 }

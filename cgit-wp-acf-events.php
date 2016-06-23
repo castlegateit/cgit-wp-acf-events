@@ -5,7 +5,7 @@ Plugin Name: Castlegate IT WP ACF Events
 Plugin URI: https://github.com/castlegateit/cgit-wp-acf-events/
 Description: A simple and easy to use events interface with complete developer
 control.
-Version: 1.3
+Version: 1.4
 Author: Castlegate IT
 Author URI: http://www.castlegateit.co.uk/
 */
@@ -43,13 +43,12 @@ register_uninstall_hook(__FILE__, 'cgit_wp_events_uninstall');
 /**
  * User guide
  */
-function cgit_wp_events_user_guide($sections) {
-
+function cgit_wp_events_user_guide($sections)
+{
     $file = dirname(__FILE__) . '/user-guide.php';
     $sections['cgit-wp-events'] = Cgit\UserGuide::getFile($file);
 
     return $sections;
-
 }
 
 add_filter('cgit_user_guide_sections', 'cgit_wp_events_user_guide');
@@ -65,8 +64,8 @@ add_filter('cgit_user_guide_sections', 'cgit_wp_events_user_guide');
  *
  * @return string
  */
-function cgit_wp_events_calendar() {
-
+function cgit_wp_events_calendar()
+{
     // Get the current year and month or set a default
     $year = isset($_GET['cgit-year']) ? $_GET['cgit-year'] : date('Y');
     $month = isset($_GET['cgit-month']) ? $_GET['cgit-month'] : date('m');
@@ -81,7 +80,6 @@ function cgit_wp_events_calendar() {
     $events_calendar = new Cgit_event_calendar($year, $month);
 
     return  $events_calendar->render();
-
 }
 
 
@@ -94,8 +92,8 @@ function cgit_wp_events_calendar() {
  *
  * @return string
  */
-function cgit_wp_events_latest($limit = 3) {
-
+function cgit_wp_events_latest($limit = 3)
+{
     $now = new DateTime('now');
 
     // Get events that are not in the past, ordered by start date.
@@ -113,46 +111,34 @@ function cgit_wp_events_latest($limit = 3) {
                 'type' => 'NUMERIC',
                 'compare' => '>='
             )
-       )
+        )
     );
 
     $query = new WP_Query($args);
 
     if ($query->posts) {
-
         // For each post - get the meta data
         foreach ($query->posts as $key => $event) {
-
             // Start date
-            $query->posts[$key]->start_date = get_post_meta(
-                $event->ID, 'start_date', true
-            );
+            $query->posts[$key]->start_date = get_post_meta($event->ID, 'start_date', true);
 
             // End date
-            $query->posts[$key]->end_date = get_post_meta(
-                $event->ID, 'end_date', true
-            );
+            $query->posts[$key]->end_date = get_post_meta($event->ID, 'end_date', true);
 
             // Start time
-             $query->posts[$key]->start_time = get_post_meta(
-                $event->ID, 'start_time', true
-            );
+             $query->posts[$key]->start_time = get_post_meta($event->ID, 'start_time', true);
 
             // End time
-            $query->posts[$key]->end_time = get_post_meta(
-                $event->ID, 'end_time', true
-            );
+            $query->posts[$key]->end_time = get_post_meta($event->ID, 'end_time', true);
 
             // End time
-            $query->posts[$key]->price = (float)get_post_meta(
-                $event->ID, 'price', true
-            );
+            $query->posts[$key]->price = (float)get_post_meta($event->ID, 'price', true);
         }
 
         return $query->posts;
     }
 
-    return array();
+    return [];
 
 }
 
@@ -167,7 +153,8 @@ function cgit_wp_events_latest($limit = 3) {
  *
  * @return string
  */
-function cgit_wp_events_to_24_hour_time($hour12) {
+function cgit_wp_events_to_24_hour_time($hour12)
+{
     return  date("H:i", strtotime($hour12));
 }
 
@@ -194,11 +181,9 @@ function cgit_wp_events_archive_title(
     $month_format = 'F Y',
     $day_format = 'jS M Y'
 ) {
-
     $return = $title . $seperator;
 
     if (is_day()) {
-
         $time = mktime(
             0,
             0,
@@ -208,9 +193,7 @@ function cgit_wp_events_archive_title(
             CGIT_WP_EVENTS_YEAR
         );
         return $return . date($day_format, $time);
-
     } elseif (is_month()) {
-
         $time = mktime(
             0,
             0,
@@ -221,9 +204,7 @@ function cgit_wp_events_archive_title(
         );
 
         return $return . date($month_format, $time);
-
     } elseif (is_year()) {
-
         $time = mktime(
             0,
             0,
@@ -232,13 +213,77 @@ function cgit_wp_events_archive_title(
             1,
             CGIT_WP_EVENTS_YEAR
         );
-
         return $return . date($year_format, $time);
-
     } else {
-
         return $title;
+    }
+}
 
+function cgit_wp_events_archive()
+{
+    // Get events that are not in the past, ordered by start date.
+    $args = array(
+        'post_type' => CGIT_EVENTS_POST_TYPE,
+        'post_status' => 'publish',
+        'meta_key' => 'start_date',
+        'orderby' => 'start_date',
+        'order' => 'ASC',
+        'posts_per_page' => -1
+    );
+
+    $query = new WP_Query($args);
+
+    $archive = [];
+
+    if ($query->posts) {
+        // For each post - get the meta data
+        foreach ($query->posts as $key => $event) {
+            // Start month
+            $start = get_post_meta($event->ID, 'start_date', true);
+            $start = (new DateTime($start))->modify('first day of this month');
+
+            // End month (optional)
+            $end = get_post_meta($event->ID, 'end_date', true);
+            if (empty($end)) {
+                $end = $start;
+            } else {
+                $end = (new DateTime($end))->modify('last day of this month');
+            }
+
+            // Date range (used to)
+            $interval = DateInterval::createFromDateString('1 month');
+            $date_range = new DatePeriod($start, $interval, $end);
+
+            // DatePeriod extends \Traversable and if the start and end are
+            // within the same month, it will have a count of zero. Fix by
+            // making a simple array
+            if (iterator_count($date_range) == 0) {
+                $date_range = [$start];
+            }
+
+            foreach ($date_range as $date) {
+                // Add an index for this year, if it is new
+                if (!array_key_exists($date->format('Y'), $archive)) {
+                    $archive[$date->format('Y')] = [];
+                }
+
+                // Check if this month exists in the year already
+                if (!in_array($date->format('m'), array_keys($archive[$date->format('Y')]))) {
+                    // Add the month to the year index
+                    $archive[$date->format('Y')][$date->format('m')] = [
+                        'date' => (new DateTime())->setDate($date->format('Y'), $date->format('m'), 1),
+                        'link' => '/' . CGIT_EVENTS_POST_TYPE . '/' . $date->format('Y') . '/' . $date->format('m') . '/',
+                        'count' => 1
+                    ];
+                } else {
+                    // Index already exists, increase the count.
+                    $archive[$date->format('Y')][$date->format('m')]['count']++;
+                }
+            }
+        }
+
+        return $archive;
     }
 
+    return array();
 }
