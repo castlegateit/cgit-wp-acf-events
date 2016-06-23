@@ -9,11 +9,11 @@ jQuery(document).ready(function($){
     }
 
     function cgitEventsDrawCalendar(response) {
-
         // Update the year and month
         $('.cgit-events-calendar').data('cgit-events-year', response.year);
         $('.cgit-events-calendar').data('cgit-events-month', response.month);
         $('.cgit-events-current span').html(response.current);
+        $('.cgit-events-current a').attr('href', '/event/' + response.year + '/' + response.month);
 
         $('.cgit-events-calendar tbody td').each(function(index, element){
             $(this).children('a').html(response.days[index].date).attr('class', '');

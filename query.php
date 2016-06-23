@@ -52,11 +52,11 @@ add_filter('pre_get_posts', 'cgit_wp_events_query');
  * @return void
  */
 function cgit_wp_events_query_archive($query) {
-
     // Get the dates from query vars
     $year = get_query_var('year', null);
     $month = get_query_var('monthnum', null);
     $day = get_query_var('day', null);
+    $day = $day > 0 ?: 1;
 
     $date = (new DateTime())->setDate($year, $month, $day);
 
