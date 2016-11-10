@@ -9,7 +9,7 @@
  * same value as the start date on save.
  */
 add_filter('save_post', function ($post_id) {
-    if ($_POST['post_type'] != CGIT_EVENTS_POST_TYPE ||
+    if (!$_POST || $_POST['post_type'] != CGIT_EVENTS_POST_TYPE ||
         $_POST['acf']['end_date']) {
         return $post_id;
     }
