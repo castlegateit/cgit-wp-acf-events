@@ -5,7 +5,7 @@ Plugin Name: Castlegate IT WP ACF Events
 Plugin URI: https://github.com/castlegateit/cgit-wp-acf-events/
 Description: A simple and easy to use events interface with complete developer
 control.
-Version: 1.5.1
+Version: 1.5.2
 Author: Castlegate IT
 Author URI: http://www.castlegateit.co.uk/
 */
@@ -108,7 +108,7 @@ function cgit_wp_events_latest($limit = 3)
         'meta_query' => array(
             array(
                 'key' => 'start_date',
-                'value' => $now->format('U'),
+                'value' => $now->format('Ymd'),
                 'type' => 'NUMERIC',
                 'compare' => '>='
             )
