@@ -1,4 +1,4 @@
-jQuery(document).ready(function($){
+jQuery(document).ready(function($) {
 
     function cgitEventsGetYear() {
         return $('.cgit-events-calendar').data('cgit-events-year');
@@ -9,20 +9,43 @@ jQuery(document).ready(function($){
     }
 
     function cgitEventsDrawCalendar(response) {
-        // Update the year and month
-        $('.cgit-events-calendar').data('cgit-events-year', response.year);
-        $('.cgit-events-calendar').data('cgit-events-month', response.month);
-        $('.cgit-events-current span').html(response.current);
-        $('.cgit-events-current a').attr('href', '/event/' + response.year + '/' + response.month);
+        var calendar = $('.cgit-events-calendar');
 
-        $('.cgit-events-calendar tbody td').each(function(index, element){
-            $(this).children('a').html(response.days[index].date).attr('class', '');
-            $(this).children('a').attr('href', response.days[index].link);
+        // Trigger data loading event.
+        calendar.trigger('cgit-wp-acf-events:data:loading');
+
+        // Update the year data attribute.
+        calendar.data('cgit-events-year', response.year);
+
+        // Update the month data attribute.
+        calendar.data('cgit-events-month', response.month);
+
+        // Update current day.
+        //calendar.children('span').html(response.current);
+       // calendar.children('a').attr('href', '/event/' + response.year + '/' + response.month);
+
+        $('.cgit-events-calendar tbody td').each(function(index, element) {
+            var cell = $(this);
+            var anchor = cell.children('a');
+
+            // Add date number.
+            anchor.html(response.days[index].date);
+
+            //$(this).children('a').attr('href', response.days[index].link);
             if (response.days[index].events.length == 1) {
+                // If the day has events, give it a link
                 $(this).children('a').attr('href', response.days[index].events[0].permalink);
+            } else {
+                // Days without events have no href attribute
+                anchor.removeAttr('href');
             }
-            $(this).attr('class', '').addClass(response.days[index].class);
+
+            // Give the cell its correct class.
+            cell.attr('class', '').addClass(response.days[index].class);
         });
+
+        // Trigger data loaded event
+        $('.cgit-events-calendar').trigger('cgit-wp-acf-events:data:loaded');
     }
 
     function cgitEventsCleanData(data) {
