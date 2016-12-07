@@ -20,10 +20,11 @@ jQuery(document).ready(function($) {
         // Update the month data attribute.
         calendar.data('cgit-events-month', response.month);
 
-        // Update current day.
-        //calendar.children('span').html(response.current);
-       // calendar.children('a').attr('href', '/event/' + response.year + '/' + response.month);
+        // Update current date indicator & link
+        $('.cgit-events-current span').html(response.current);
+        $('.cgit-events-current a').attr('href', '/event/' + response.year + '/' + response.month);
 
+        // Update each cell
         $('.cgit-events-calendar tbody td').each(function(index, element) {
             var cell = $(this);
             var anchor = cell.children('a');
@@ -48,6 +49,11 @@ jQuery(document).ready(function($) {
         $('.cgit-events-calendar').trigger('cgit-wp-acf-events:data:loaded');
     }
 
+    /**
+     * Cleans date data to ensure no odd dates are returned.
+     *
+     * @return array
+     */
     function cgitEventsCleanData(data) {
         if (data.month > 12) {
             data.month = 1;
