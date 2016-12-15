@@ -9,13 +9,18 @@
  * same value as the start date on save.
  */
 add_filter('save_post', function ($post_id) {
-    if (!$_POST || $_POST['post_type'] != CGIT_EVENTS_POST_TYPE ||
-        $_POST['acf']['end_date']) {
+    $not_post_type = isset($_POST['post_type'])
+        && $_POST['post_type'] != CGIT_EVENTS_POST_TYPE;
+
+    $end_date_set = isset($_POST['acf']['end_date'])
+        && !empty($_POST['acf']['end_date']);
+
+    if (!$_POST || $not_post_type || $end_date_set) {
         return $post_id;
     }
 
-    // $_POST['acf']['end_date'] = $_POST['acf']['start_date'];
-    update_field('end_date', $_POST['acf']['start_date'], $post_id);
+    $start = isset($_POST['acf']['start_date']) ? $_POST['acf']['start_date'] : '';
+    update_field('end_date', $start, $post_id);
 
     return $post_id;
 });
