@@ -36,6 +36,8 @@ jQuery(document).ready(function($) {
             if (response.days[index].events.length == 1) {
                 // If the day has events, give it a link
                 $(this).children('a').attr('href', response.days[index].events[0].permalink);
+            } else if (response.days[index].events.length > 1) {
+                $(this).children('a').attr('href', response.days[index].link);
             } else {
                 // Days without events have no href attribute
                 anchor.removeAttr('href');

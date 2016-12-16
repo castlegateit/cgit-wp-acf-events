@@ -183,9 +183,13 @@ class Cgit_event_calendar {
         $out.= "</th>\n";
 
         // Current month
+        $link = apply_filters(
+            'cgit_wp_acf_events_calendar_current_month_link',
+            get_post_type_archive_link('event').$current->format('Y/m')
+        );
         $out.= "<th colspan=\"3\" class=\"" . $this->c('cu') . "\">";
             $out.= "<a href=\"";
-            $out.= get_post_type_archive_link('event') .$current->format('Y/m');
+            $out.= $link;
             $out.= "\"><span>";
             $out.= $current->format($this->options['current_month']);
             $out.= "</span></a>";
@@ -320,47 +324,77 @@ class Cgit_event_calendar {
         // Get the first day of this month
         $query_start->modify('first day of this month');
 
-
         global $wpdb;
-        $posts = $wpdb->get_results(
-            "SELECT
 
-                start_meta.meta_value AS event_start,
-                end_meta.meta_value AS event_end,
-                " . $wpdb->prefix . "posts.*
+        // Select
+        $select = "SELECT
+            start_meta.meta_value AS event_start,
+            end_meta.meta_value AS event_end,
+            " . $wpdb->prefix . "posts.* ";
 
-            FROM `" . $wpdb->prefix . "posts`
+        // Filter select
+        $select = apply_filters(
+            'cgit_wp_acf_events_calendar_sql_select',
+            $select
+        );
 
-            LEFT JOIN `" . $wpdb->prefix . "postmeta` start_meta
-                ON `" . $wpdb->prefix . "posts`.`ID` = `start_meta`.`post_id`
-                    AND start_meta.meta_key = 'start_date'
+        // From
+        $from = "FROM `" . $wpdb->prefix . "posts` ";
+
+        // Filter from
+        $from = apply_filters(
+            'cgit_wp_acf_events_calendar_sql_from',
+            $from
+        );
+
+        // Join
+        $join = "LEFT JOIN `" . $wpdb->prefix . "postmeta` start_meta
+            ON `" . $wpdb->prefix . "posts`.`ID` = `start_meta`.`post_id`
+                AND start_meta.meta_key = 'start_date'
 
             LEFT JOIN `" . $wpdb->prefix . "postmeta` end_meta
                 ON `" . $wpdb->prefix . "posts`.`ID` = `end_meta`.`post_id`
-                    AND end_meta.meta_key = 'end_date'
+                    AND end_meta.meta_key = 'end_date' ";
 
-            WHERE
-
-                post_status = 'publish' AND post_type = 'event'
-
-                AND
-
-                (
-                    (
-                        start_meta.meta_value < " . $query_end->format('Ymd') ."
-                        AND
-                        start_meta.meta_value >= " . $query_start->format('Ymd') ."
-                    )
-                    OR
-                    (
-                        start_meta.meta_value < " . $query_start->format('Ymd') . "
-                        AND
-                        end_meta.meta_value>= " . $query_start->format('Ymd') . "
-                    )
-                )
-
-            GROUP BY `" . $wpdb->prefix . "posts`.`ID`"
+        // Filter join
+        $join = apply_filters(
+            'cgit_wp_acf_events_calendar_sql_join',
+            $join
         );
+
+        // Where
+        $where = "post_status = 'publish' AND post_type = 'event'
+            AND
+            (
+                (
+                    start_meta.meta_value < " . $query_end->format('Ymd') ."
+                    AND
+                    start_meta.meta_value >= " . $query_start->format('Ymd') ."
+                )
+                OR
+                (
+                    start_meta.meta_value < " . $query_start->format('Ymd') . "
+                    AND
+                    end_meta.meta_value>= " . $query_start->format('Ymd') . "
+                )
+            )";
+
+        // Filter where
+        $where = apply_filters(
+            'cgit_wp_acf_events_calendar_sql_where',
+            $where
+        );
+
+        // Group
+        $group = "GROUP BY `" . $wpdb->prefix . "posts`.`ID`";
+
+        // Filter group
+        $group = apply_filters(
+            'cgit_wp_acf_events_calendar_sql_group',
+            $group
+        );
+
+        $posts = $wpdb->get_results($select.$from.$join.' WHERE '.$where.$group);
 
         // Create a DatePeriod object for this calendars date range
         $interval = new DateInterval('P1D');
@@ -391,7 +425,10 @@ class Cgit_event_calendar {
                     ) {
                         $events[] = array(
                             'id' => $p->ID,
-                            'permalink' => get_the_permalink($p->ID)
+                            'permalink' => apply_filters(
+                                'cgit_wp_acf_events_calendar_event_link',
+                                get_the_permalink($p->ID)
+                            )
                         );
                     }
                 }
@@ -412,6 +449,7 @@ class Cgit_event_calendar {
             // Build the data array
             $link = get_post_type_archive_link('event');
             $link.= $date->format('Y/m/d/');
+            $link = apply_filters('cgit_wp_acf_events_calendar_day_link', $link);
 
             $class_events = (count($events) > 0 ? ' ' . $this->c('ev') : '');
 
