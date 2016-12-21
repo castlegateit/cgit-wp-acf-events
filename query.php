@@ -208,6 +208,6 @@ function cgit_wp_events_query_main_listing($query)
     ));
 
     // Order by start date
-    $query->set('orderby', 'meta_value');
+    $query->set('orderby', 'start_date');
     $query->set('order', 'ASC');
 }
