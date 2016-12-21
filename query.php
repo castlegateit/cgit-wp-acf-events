@@ -4,47 +4,42 @@
  * Rewrite the archive and category page queries to filter and order the posts
  * correctly.
  *
- * @author Castlgate IT <info@castlegateit.co.uk>
- * @author Andy Reading
- *
  * @return void
  */
-function cgit_wp_events_query($query)
-{
-    // We apply this to the front end only, not the admin page, check first.
-    if (is_admin()) {
-        return;
-    }
+add_filter(
+    'pre_get_posts',
+    function ($query) {
+        // Filter applies to front end queries only.
+        if (is_admin()) {
+            return;
+        }
 
-    // Only apply to main query
-    if ($query->is_main_query()) {
-        if (is_post_type_archive(CGIT_EVENTS_POST_TYPE)) {
-            // Adjust the query for archives and main event listings
-            cgit_wp_events_query_archive($query);
-        } elseif (is_tax()) {
-            // Adjust the query for category listings
-            global $wp_query;
+        // Apply the filter to the main query.
+        if ($query->is_main_query()) {
+            if (is_post_type_archive(CGIT_EVENTS_POST_TYPE)) {
+                // Adjust the query for archives and main event listings
+                cgit_wp_events_query_archive($query);
+            } elseif (is_tax()) {
+                // Adjust the query for category listings
+                global $wp_query;
 
-            $term = $wp_query->get_queried_object();
+                $term = $wp_query->get_queried_object();
 
-            if ($term && $term->taxonomy == CGIT_EVENTS_POST_TYPE_CATEGORY) {
-                cgit_wp_events_query_main_listing($query);
+                if ($term
+                    && $term->taxonomy == CGIT_EVENTS_POST_TYPE_CATEGORY
+                ) {
+                    cgit_wp_events_query_main_listing($query);
+                }
             }
         }
     }
-
-}
-add_filter('pre_get_posts', 'cgit_wp_events_query');
-
+);
 
 /**
  * Rewrite the events archive page SQL query. WordPress assumes the dates in the
  * URL are to show standard post archives by date. These are disabled and custom
  * queries generated to check against the meta values that the start and end
  * dates are stored in.
- *
- * @author Castlgate IT <info@castlegateit.co.uk>
- * @author Andy Reading
  *
  * @return void
  */
@@ -192,9 +187,6 @@ function cgit_wp_events_query_archive($query)
 /**
  * Rewrite the category listings. Join with the meta tables so we can order the
  * results by start_date.
- *
- * @author Castlgate IT <info@castlegateit.co.uk>
- * @author Andy Reading
  *
  * @return void
  */
