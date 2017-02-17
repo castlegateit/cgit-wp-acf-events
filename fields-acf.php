@@ -18,6 +18,11 @@ add_action(
             $times[$time] = $time;
         }
 
+        // Default map location
+        $location = apply_filters('cgit_wp_acf_events_default_map_location', [0, 0]);
+        $center_lat = $location[0];
+        $center_lng = $location[1];
+
         // Add date and time fields
         acf_add_local_field_group(array(
             'key' => 'cgit_wp_events_when',
@@ -109,6 +114,8 @@ add_action(
                     'name' => 'location',
                     'label' => 'Location',
                     'type' => 'google_map',
+                    'center_lat' => $center_lat,
+                    'center_lng' => $center_lng,
                 ),
                 array(
                     'key' => 'price',
