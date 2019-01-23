@@ -64,7 +64,7 @@ function cgit_wp_events_query_archive($query)
         // Displaying a single day archive
         $query->set('meta_query', array(
             'relation' => 'AND',
-            array(
+            'order_by_clause' => array(
                 'key' => 'start_date',
                 'value' => $date->format('Ymd'),
                 'type' => 'NUMERIC',
@@ -77,6 +77,9 @@ function cgit_wp_events_query_archive($query)
                 'compare' => '>='
             )
         ));
+        $query->set('orderby', 'order_by_clause');
+        $query->set('order', 'ASC');
+
     } elseif ($has_year && $has_month) {
         // Number of days in this month
         $days_in_month = cal_days_in_month(CAL_GREGORIAN, $month, $year);
@@ -107,7 +110,7 @@ function cgit_wp_events_query_archive($query)
             ),
             array(
                 'relation' => 'AND',
-                array(
+                'order_by_clause' => array(
                     'key' => 'start_date',
                     'value' => $month_start->format('Y-m-d'),
                     'type' => 'DATE',
@@ -121,6 +124,8 @@ function cgit_wp_events_query_archive($query)
                 )
             ),
         ));
+        $query->set('orderby', 'order_by_clause');
+        $query->set('order', 'ASC');
     } elseif ($has_year) {
         // Start of the year
         $year_start = (new DateTime())->setDate($year, 1, 1);
@@ -148,7 +153,7 @@ function cgit_wp_events_query_archive($query)
             ),
             array(
                 'relation' => 'AND',
-                array(
+                'order_by_clause' => array(
                     'key' => 'start_date',
                     'value' => $year_start->format('Y-m-d'),
                     'type' => 'DATE',
@@ -162,6 +167,8 @@ function cgit_wp_events_query_archive($query)
                 )
             ),
         ));
+        $query->set('orderby', 'order_by_clause');
+        $query->set('order', 'ASC');
     } else {
         // This is the main listing of events
         cgit_wp_events_query_main_listing($query);
@@ -175,10 +182,6 @@ function cgit_wp_events_query_archive($query)
         $query->set('year', '');
         $query->set('monthnum', '');
         $query->set('day', '');
-
-        // Order by start date
-        $query->set('orderby', 'meta_value');
-        $query->set('order', 'ASC');
     }
 
 }
@@ -198,16 +201,25 @@ function cgit_wp_events_query_main_listing($query)
      * Where start_date is greater than one. This is here purely to force a join
      * on the meta tables without manually overwriting the join.
      */
-    $query->set('meta_query', array(
+    $query->set('meta_query',
         array(
-            'key' => 'end_date',
-            'value' => $now->format('Ymd'),
-            'type' => 'NUMERIC',
-            'compare' => '>='
+            'relation' => 'AND',
+            array(
+                'key' => 'end_date',
+                'value' => $now->format('Ymd'),
+                'type' => 'NUMERIC',
+                'compare' => '>='
+            ),
+            'order_by_clause' => array(
+                'key' => 'start_date',
+                'value' => '99999999',
+                'type' => 'NUMERIC',
+                'compare' => '!='
+            ),
         )
-    ));
+    );
 
     // Order by start date
-    $query->set('orderby', 'start_date');
+    $query->set('orderby', 'order_by_clause');
     $query->set('order', 'ASC');
 }
