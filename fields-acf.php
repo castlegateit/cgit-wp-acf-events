@@ -24,7 +24,7 @@ add_action(
         $center_lng = $location[1];
 
         // Add date and time fields
-        acf_add_local_field_group(array(
+        $date_time_fields = array(
             'key' => 'cgit_wp_events_when',
             'title' => 'When',
             'fields' => array(
@@ -90,10 +90,13 @@ add_action(
                 ),
             ),
             'position' => 'side',
-        ));
+        );
+
+        $date_time_fields = apply_filters('cgit_wp_acf_fields_date_time', $date_time_fields);
+        acf_add_local_field_group($date_time_fields);
 
         // Add location fields
-        acf_add_local_field_group(array(
+        $location_fields = array(
             'key' => 'cgit_wp_events_where',
             'title' => 'Where',
             'fields' => array(
@@ -133,6 +136,9 @@ add_action(
                     ),
                 ),
             ),
-        ));
+        );
+
+        $location_fields = apply_filters('cgit_wp_acf_fields_location', $location_fields);
+        acf_add_local_field_group($location_fields);
     }
 );
