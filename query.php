@@ -60,19 +60,22 @@ function cgit_wp_events_query_archive($query)
     define('CGIT_WP_EVENTS_MONTH', $date->format('n'));
     define('CGIT_WP_EVENTS_DAY', $date->format('j'));
 
+    $meta_date_format = 'Ymd';
+    $meta_date_format = apply_filters('cgit_wp_acf_events_meta_date_format', $meta_date_format);
+
     if ($has_year && $has_month && $has_day) {
         // Displaying a single day archive
         $query->set('meta_query', array(
             'relation' => 'AND',
             'order_by_clause' => array(
                 'key' => 'start_date',
-                'value' => $date->format('Ymd'),
+                'value' => $date->format($meta_date_format),
                 'type' => 'NUMERIC',
                 'compare' => '<='
             ),
             array(
                 'key' => 'end_date',
-                'value' => $date->format('Ymd'),
+                'value' => $date->format($meta_date_format),
                 'type' => 'NUMERIC',
                 'compare' => '>='
             )
@@ -97,13 +100,13 @@ function cgit_wp_events_query_archive($query)
                 'relation' => 'OR',
                 array(
                     'key' => 'start_date',
-                    'value' => [$month_start->format('Y-m-d'), $month_end->format('Y-m-d')],
+                    'value' => [$month_start->format($meta_date_format), $month_end->format($meta_date_format)],
                     'type' => 'DATE',
                     'compare' => 'BETWEEN'
                 ),
                 array(
                     'key' => 'end_date',
-                    'value' => [$month_start->format('Y-m-d'), $month_end->format('Y-m-d')],
+                    'value' => [$month_start->format($meta_date_format), $month_end->format($meta_date_format)],
                     'type' => 'DATE',
                     'compare' => 'BETWEEN'
                 )
@@ -112,13 +115,13 @@ function cgit_wp_events_query_archive($query)
                 'relation' => 'AND',
                 'order_by_clause' => array(
                     'key' => 'start_date',
-                    'value' => $month_start->format('Y-m-d'),
+                    'value' => $month_start->format($meta_date_format),
                     'type' => 'DATE',
                     'compare' => '<'
                 ),
                 array(
                     'key' => 'end_date',
-                    'value' => $month_end->format('Y-m-d'),
+                    'value' => $month_end->format($meta_date_format),
                     'type' => 'DATE',
                     'compare' => '>'
                 )
@@ -140,13 +143,13 @@ function cgit_wp_events_query_archive($query)
                 'relation' => 'OR',
                 array(
                     'key' => 'start_date',
-                    'value' => [$year_start->format('Y-m-d'), $year_end->format('Y-m-d')],
+                    'value' => [$year_start->format($meta_date_format), $year_end->format($meta_date_format)],
                     'type' => 'DATE',
                     'compare' => 'BETWEEN'
                 ),
                 array(
                     'key' => 'end_date',
-                    'value' => [$year_start->format('Y-m-d'), $year_end->format('Y-m-d')],
+                    'value' => [$year_start->format($meta_date_format), $year_end->format($meta_date_format)],
                     'type' => 'DATE',
                     'compare' => 'BETWEEN'
                 )
@@ -155,13 +158,13 @@ function cgit_wp_events_query_archive($query)
                 'relation' => 'AND',
                 'order_by_clause' => array(
                     'key' => 'start_date',
-                    'value' => $year_start->format('Y-m-d'),
+                    'value' => $year_start->format($meta_date_format),
                     'type' => 'DATE',
                     'compare' => '<'
                 ),
                 array(
                     'key' => 'end_date',
-                    'value' => $year_end->format('Y-m-d'),
+                    'value' => $year_end->format($meta_date_format),
                     'type' => 'DATE',
                     'compare' => '>'
                 )
@@ -196,6 +199,10 @@ function cgit_wp_events_query_archive($query)
 function cgit_wp_events_query_main_listing($query)
 {
     $now = new DateTime('now');
+    $compare = (new DateTime('now'))->modify('+900 years');
+
+    $meta_date_format = 'Ymd';
+    $meta_date_format = apply_filters('cgit_wp_acf_events_meta_date_format', $meta_date_format);
 
     /**
      * Where start_date is greater than one. This is here purely to force a join
@@ -205,15 +212,15 @@ function cgit_wp_events_query_main_listing($query)
         array(
             'relation' => 'AND',
             array(
-                'key' => 'end_date',
-                'value' => $now->format('Ymd'),
-                'type' => 'NUMERIC',
+                'key' => 'start_date',
+                'value' => $now->format($meta_date_format),
+                'type' => 'DATE',
                 'compare' => '>='
             ),
             'order_by_clause' => array(
                 'key' => 'start_date',
-                'value' => '99999999',
-                'type' => 'NUMERIC',
+                'value' => $compare->format($meta_date_format),
+                'type' => 'DATE',
                 'compare' => '!='
             ),
         )
