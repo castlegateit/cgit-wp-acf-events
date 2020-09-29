@@ -53,7 +53,7 @@ add_filter('posts_where', function ($where, $query) {
             if (get_query_var('year', null)
                 && get_query_var('monthnum', null) === 0
             ) {
-                $regex = '/\s*AND\s*\(\s*\(\s*YEAR\s*\([^\)]+?\)\s*=\s*\d+\s*AND\s*MONTH\s*\([^\)]+?\)\s*=\s*\d+\s*\)\s*\)/';
+                $regex = '/\s*AND\s*\(\s*YEAR\s*\([^\)]+?\)\s*=\s*\d+\s*\)/';
                 $where = preg_replace($regex, '', $where);
             }
 
