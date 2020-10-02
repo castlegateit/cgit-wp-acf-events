@@ -138,6 +138,13 @@ function cgit_wp_events_query_archive($query)
         // End of the month
         $month_end = (new DateTime())->setDate($year, $month, $days_in_month);
 
+        // If the end of the month is in the future, make the end date now
+        $now = new DateTime();
+        if ($month_end > $now) {
+            $month_end = $now;
+        }
+
+
         // Month archive
         $query->set('meta_query', array(
             'relation' => 'OR',
@@ -181,6 +188,11 @@ function cgit_wp_events_query_archive($query)
 
         // End of the year
         $year_end = (new DateTime())->setDate($year, 12, 31);
+        // If the end of the year is in the future, make the end date now
+        $now = new DateTime();
+        if ($year_end > $now) {
+            $year_end = $now;
+        }
 
         // Year archive
         $query->set('meta_query', array(
