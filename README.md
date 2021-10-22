@@ -72,3 +72,7 @@ If your theme supports widgets, the events calendar can also be added as a widge
 ## UK dates ##
 
 If the [CMB UK date field plugin](https://github.com/castlegateit/cgit-wp-cmb-ukdate) plugin is installed and you are using the Custom Meta Boxes plugin, the start and end dates will use that field type. If not, they will use the standard Unix date field.
+
+## License
+
+Released under the [MIT License](https://opensource.org/licenses/MIT). See [LICENSE](LICENSE) for details.
