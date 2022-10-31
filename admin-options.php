@@ -13,7 +13,8 @@ class cgit_wp_events {
         'cgit_wp_events_post_type_support_author' => '',
         'cgit_wp_events_post_type_support_thumbnail' => '',
         'cgit_wp_events_post_type_support_comments' => '',
-        'cgit_wp_events_post_type_support_page-attributes' => ''
+        'cgit_wp_events_post_type_support_page-attributes' => '',
+        'cgit_wp_events_post_type_support_calendar-direct-url-to-event' => '1'
     );
 }
 
@@ -155,6 +156,17 @@ function cgit_wp_events_render_settings_page() {
                     <label>
                         <input type="checkbox" name="cgit_wp_events_post_type_support_page-attributes" value="1"<?php echo get_option('cgit_wp_events_post_type_support_page-attributes') ? ' checked="checked"' : ''; ?> />
                         Page attributes
+                    </label>
+                </td>
+            </tr>
+            
+            <tr>
+                <td>
+                    <label>
+                        <input type="checkbox" name="cgit_wp_events_post_type_support_calendar-direct-url-to-event" value="1"<?php echo get_option('cgit_wp_events_post_type_support_calendar-direct-url-to-event') ? ' checked="checked"' : ''; ?> />
+                        Direct URL to event on event calendar
+                        <br />
+                        <small>When enabled, the event calendar will display a direct link to an event when it is the only one on the day.</small>
                     </label>
                 </td>
             </tr>

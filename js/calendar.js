@@ -11,6 +11,9 @@ jQuery(document).ready(function($) {
     function cgitEventsDrawCalendar(response) {
         var calendar = $('.cgit-events-calendar');
 
+        // Checks if the calendar should display a direct link to an event if it's the only one on a specific day
+        var display_direct_link_to_event = response.display_direct_link_to_event;
+
         // Trigger data loading event.
         calendar.trigger('cgit-wp-acf-events:data:loading');
 
@@ -35,7 +38,11 @@ jQuery(document).ready(function($) {
             //$(this).children('a').attr('href', response.days[index].link);
             if (response.days[index].events.length == 1) {
                 // If the day has events, give it a link
-                $(this).children('a').attr('href', response.days[index].events[0].permalink);
+                if(display_direct_link_to_event) {
+                    $(this).children('a').attr('href', response.days[index].events[0].permalink);
+                }else {
+                    $(this).children('a').attr('href', response.days[index].link);
+                }
             } else if (response.days[index].events.length > 1) {
                 $(this).children('a').attr('href', response.days[index].link);
             } else {

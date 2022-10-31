@@ -237,6 +237,9 @@ class Cgit_event_calendar {
         // Output variable
         $out = '';
 
+        // Check if the calendar should display a direct link to an event
+        $display_direct_link_to_event = $this->displayDirectLinkToEvent();
+
         // Loop through and output calendar days
         $i = 1;
         foreach ($this->getDays($this->year, $this->month) as $day) {
@@ -249,7 +252,7 @@ class Cgit_event_calendar {
             $out.= "<td class=\"" . $day['class'] . "\"><a";
 
             if ($day['events']) {
-                if (count($day['events']) == 1) {
+                if ($display_direct_link_to_event && count($day['events']) == 1) {
                     $link = reset($day['events']);
                     $link = $link['permalink'];
                 } else {
@@ -482,7 +485,8 @@ class Cgit_event_calendar {
             'year' => $this->year,
             'month' => $this->month,
             'days' => $this->getDays(),
-            'current' => $current->format($this->options['current_month'])
+            'current' => $current->format($this->options['current_month']),
+            'display_direct_link_to_event' => $this->displayDirectLinkToEvent(),
         );
     }
 
@@ -511,6 +515,27 @@ class Cgit_event_calendar {
         }
 
         return implode(' ', $return);
+    }
+
+    // -------------------------------------------------------------------------
+
+    /**
+     * Checks if the calendar should display a direct link to an event if it's the only one on the day.
+     *
+     * @author Castlgate IT <info@castlegateit.co.uk>
+     * @author Lamé Moatshe
+     *
+     * @return bool
+     */
+    private function displayDirectLinkToEvent()
+    {
+        $display_direct_link = get_option('cgit_wp_events_post_type_support_calendar-direct-url-to-event');
+
+        if($display_direct_link) {
+            return true;
+        }else {
+            return false;
+        }
     }
 
     // -------------------------------------------------------------------------
