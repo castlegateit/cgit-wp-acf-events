@@ -42,20 +42,6 @@ register_uninstall_hook(__FILE__, 'cgit_wp_events_uninstall');
 
 
 /**
- * User guide
- */
-function cgit_wp_events_user_guide($sections)
-{
-    $file = dirname(__FILE__) . '/user-guide.php';
-    $sections['cgit-wp-events'] = Cgit\UserGuide::getFile($file);
-
-    return $sections;
-}
-
-add_filter('cgit_user_guide_sections', 'cgit_wp_events_user_guide');
-
-
-/**
  * Retuns a calendar view of all events in the WordPress installation. The
  * calendar is AJAX powered. Presentation can be customised through the admin
  * settings page.
