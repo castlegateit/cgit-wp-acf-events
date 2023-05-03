@@ -5,7 +5,7 @@
  */
 function cgit_events_scripts_init()
 {
-    wp_enqueue_script('cgit-events-calendar', plugins_url('/js/calendar.js', __FILE__), array('jquery'));
+    wp_enqueue_script('cgit-events-calendar', plugins_url('/js/calendar.js', __FILE__));
 
     /**
      * Define the AJAX handler

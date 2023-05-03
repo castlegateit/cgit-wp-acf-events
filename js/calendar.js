@@ -1,62 +1,51 @@
-jQuery(document).ready(function($) {
+document.addEventListener('DOMContentLoaded', function () {
+    const calendar = document.querySelector('.cgit-events-calendar');
 
-    function cgitEventsGetYear() {
-        return $('.cgit-events-calendar').data('cgit-events-year');
+    if (!calendar) {
+        return;
     }
 
-    function cgitEventsGetMonth() {
-        return $('.cgit-events-calendar').data('cgit-events-month');
-    }
+    // Redraw calendar with response data
+    function draw(response) {
+        let current = document.querySelector('.cgit-events-current');
+        let cells = document.querySelectorAll('.cgit-events-calendar tbody td');
 
-    function cgitEventsDrawCalendar(response) {
-        var calendar = $('.cgit-events-calendar');
+        // Set current year and month based on response data
+        calendar.dataset.year = response.year;
+        calendar.dataset.month = response.month;
 
-        // Trigger data loading event.
-        calendar.trigger('cgit-wp-acf-events:data:loading');
+        // Update current date indicator and link
+        current.querySelector('span').innerHTML = response.current;
+        current.querySelector('a').setAttribute('html', '/event/' + response.year + '/' + response.month);
 
-        // Update the year data attribute.
-        calendar.data('cgit-events-year', response.year);
+        // Update all cells in calendar table
+        let i = 0;
 
-        // Update the month data attribute.
-        calendar.data('cgit-events-month', response.month);
+        for (let cell of cells) {
+            let link = cell.querySelector('a');
+            let day = response.days[i];
 
-        // Update current date indicator & link
-        $('.cgit-events-current span').html(response.current);
-        $('.cgit-events-current a').attr('href', '/event/' + response.year + '/' + response.month);
+            // Set link text
+            link.innerHTML = day.date;
 
-        // Update each cell
-        $('.cgit-events-calendar tbody td').each(function(index, element) {
-            var cell = $(this);
-            var anchor = cell.children('a');
-
-            // Add date number.
-            anchor.html(response.days[index].date);
-
-            //$(this).children('a').attr('href', response.days[index].link);
-            if (response.days[index].events.length == 1) {
-                // If the day has events, give it a link
-                $(this).children('a').attr('href', response.days[index].events[0].permalink);
-            } else if (response.days[index].events.length > 1) {
-                $(this).children('a').attr('href', response.days[index].link);
+            // Link to event(s)
+            if (day.events.length === 1) {
+                link.setAttribute('href', day.events[0].permalink);
+            } else if (day.events.length > 1) {
+                link.setAttribute('href', day.link);
             } else {
-                // Days without events have no href attribute
-                anchor.removeAttr('href');
+                link.removeAttribute('href');
             }
 
-            // Give the cell its correct class.
-            cell.attr('class', '').addClass(response.days[index].class);
-        });
+            // Update cell class attribute
+            cell.setAttribute('class', day.class);
 
-        // Trigger data loaded event
-        $('.cgit-events-calendar').trigger('cgit-wp-acf-events:data:loaded');
+            i++;
+        }
     }
 
-    /**
-     * Cleans date data to ensure no odd dates are returned.
-     *
-     * @return array
-     */
-    function cgitEventsCleanData(data) {
+    // Sanitize year and month data
+    function sanitize(data) {
         if (data.month > 12) {
             data.month = 1;
             data.year++;
@@ -64,89 +53,73 @@ jQuery(document).ready(function($) {
             data.month = 12;
             data.year--;
         }
+
         return data;
     }
 
-    /**
-     * Click event for next year
-     */
-    jQuery('.cgit-events-next-year').click(function(e){
+    // Send an AJAX request for calendar data and redraw the calendar based on
+    // the response data.
+    function send(data) {
+        let request = new XMLHttpRequest();
+        let form = new FormData();
 
-        // Define the data
-        var data = {
-            'year' : parseInt(cgitEventsGetYear()) + 1,
-            'month' : cgitEventsGetMonth(),
-            'action' : 'cgit_events_calendar'
-        };
+        let method = 'POST';
+        let url = ajax_object.ajax_url;
 
-        jQuery.post(ajax_object.ajax_url, cgitEventsCleanData(data), function(response) {
-            cgitEventsDrawCalendar(response);
-        }, 'json');
+        data = sanitize(data);
 
+        form.append('action', 'cgit_events_calendar');
+        form.append('year', data.year);
+        form.append('month', data.month);
+
+        request.open(method, url, true);
+
+        request.onreadystatechange = function () {
+            if (request.readyState === 4 && request.status === 200) {
+                draw(JSON.parse(request.responseText));
+            }
+        }
+
+        request.send(form);
+    }
+
+    // Show next year
+    document.querySelector('.cgit-events-next-year').addEventListener('click', function (e) {
         e.preventDefault();
-        return;
+
+        send({
+            year: parseInt(calendar.dataset.year, 10) + 1,
+            month: parseInt(calendar.dataset.month, 10)
+        });
     });
 
-    /**
-     * Click event for previous year
-     */
-    jQuery('.cgit-events-prev-year').click(function(e){
-
-        // Define the data
-        var data = {
-            'year' : parseInt(cgitEventsGetYear()) - 1,
-            'month' : cgitEventsGetMonth(),
-            'action' : 'cgit_events_calendar'
-        };
-
-        jQuery.post(ajax_object.ajax_url, cgitEventsCleanData(data), function(response) {
-            cgitEventsDrawCalendar(response);
-        }, 'json');
-
+    // Show previous year
+    document.querySelector('.cgit-events-prev-year').addEventListener('click', function (e) {
         e.preventDefault();
-        return;
+
+        send({
+            year: parseInt(calendar.dataset.year, 10) - 1,
+            month: parseInt(calendar.dataset.month, 10)
+        });
     });
 
-    /**
-     * Click event for next month
-     */
-    jQuery('.cgit-events-next-month').click(function(e){
-
-        // Define the data
-        var data = {
-            'year' : cgitEventsGetYear(),
-            'month' : parseInt(cgitEventsGetMonth()) + 1,
-            'action' : 'cgit_events_calendar'
-        };
-
-        jQuery.post(ajax_object.ajax_url, cgitEventsCleanData(data), function(response) {
-            cgitEventsDrawCalendar(response);
-        }, 'json');
-
+    // Show next month
+    document.querySelector('.cgit-events-next-month').addEventListener('click', function (e) {
         e.preventDefault();
-        return;
+
+        send({
+            year: parseInt(calendar.dataset.year, 10),
+            month: parseInt(calendar.dataset.month, 10) + 1
+        });
     });
 
-    /**
-     * Click event for previous month
-     */
-    jQuery('.cgit-events-prev-month').click(function(e){
-
-        // Define the data
-        var data = {
-            'year' : cgitEventsGetYear(),
-            'month' : parseInt(cgitEventsGetMonth()) - 1,
-            'action' : 'cgit_events_calendar'
-        };
-
-        jQuery.post(ajax_object.ajax_url, cgitEventsCleanData(data), function(response) {
-            cgitEventsDrawCalendar(response);
-        }, 'json');
-
+    // Show previous month
+    document.querySelector('.cgit-events-prev-month').addEventListener('click', function (e) {
         e.preventDefault();
-        return;
+
+        send({
+            year: parseInt(calendar.dataset.year, 10),
+            month: parseInt(calendar.dataset.month, 10) - 1
+        });
     });
-
-
-
 });
