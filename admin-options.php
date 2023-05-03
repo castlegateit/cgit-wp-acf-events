@@ -7,7 +7,6 @@ class cgit_wp_events {
 
     public static $options = array(
         'cgit_wp_events_post_type_support_category' => '1',
-        'cgit_wp_events_post_type_support_tag' => '',
         'cgit_wp_events_post_type_support_editor' => '1',
         'cgit_wp_events_post_type_support_excerpt' => '1',
         'cgit_wp_events_post_type_support_author' => '',
@@ -92,15 +91,6 @@ function cgit_wp_events_render_settings_page() {
                     <label>
                         <input type="checkbox" name="cgit_wp_events_post_type_support_category" value="1"<?php echo get_option('cgit_wp_events_post_type_support_category') ? ' checked="checked"' : ''; ?> />
                         Categories
-                    </label>
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    <label>
-                        <input type="checkbox" name="cgit_wp_events_post_type_support_tag" value="1"<?php echo get_option('cgit_wp_events_post_type_support_tag') ? ' checked="checked"' : ''; ?> />
-                        Tags
                     </label>
                 </td>
             </tr>

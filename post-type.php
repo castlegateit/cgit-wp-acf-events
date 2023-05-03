@@ -53,7 +53,7 @@ function cgit_wp_events_post_type()
         'query_var' => CGIT_EVENTS_POST_TYPE,
     );
 
-    // Should we include tags?
+    // Legacy support for the post tag taxonomy, shared with posts
     if (get_option('cgit_wp_events_post_type_support_tag') == 1) {
         $options['taxonomies'] = array('post_tag');
     }
