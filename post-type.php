@@ -22,20 +22,6 @@ function cgit_wp_events_post_type()
         'not_found_in_trash' => 'No events found in Trash',
     );
 
-    // Get support from options
-    $supports = array(
-        'title',
-        'revisions'
-    );
-
-    foreach (cgit_wp_events::$options as $option => $v) {
-        if (substr($option, 0, 33) == 'cgit_wp_events_post_type_support_'
-            && get_option($option) == 1
-        ) {
-            $supports[] = substr($option, 33);
-        }
-    }
-
     // Post type rewrite options
     $rewrite = array(
         'slug' => CGIT_EVENTS_POST_TYPE,
@@ -47,7 +33,7 @@ function cgit_wp_events_post_type()
         'labels' => $labels,
         'public' => true,
         'menu_icon' => 'dashicons-calendar-alt',
-        'supports' => $supports,
+        'supports' => cgit_wp_events::get_post_type_supports_args(),
         'has_archive' => true,
         'rewrite' => $rewrite,
         'query_var' => CGIT_EVENTS_POST_TYPE,
@@ -74,7 +60,7 @@ add_action('init', 'cgit_wp_events_post_type', 10);
  */
 function cgit_wp_events_taxonomy()
 {
-    if (get_option('cgit_wp_events_post_type_support_category') == 1) {
+    if (cgit_wp_events::has_category_taxonomy()) {
         $labels = array(
             'name' => 'Categories',
             'singular_name' => 'Category',

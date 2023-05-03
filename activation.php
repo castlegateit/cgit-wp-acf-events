@@ -29,17 +29,9 @@ function cgit_wp_events_activate()
  */
 function cgit_wp_events_default_options()
 {
-    // Set default options
-    foreach (cgit_wp_events::$options as $option => $value) {
-        if (empty(get_option($option))) {
-            if (is_array($value)) {
-                foreach ($value as $k => $v) {
-                    update_option($option, $v);
-                    break;
-                }
-            } else {
-                update_option($option, $value);
-            }
+    foreach (cgit_wp_events::get_options() as $option => $value) {
+        if (is_null(get_option($option, null))) {
+            update_option($option, $value);
         }
     }
 }
@@ -55,10 +47,8 @@ function cgit_wp_events_default_options()
  */
 function cgit_wp_events_uninstall()
 {
-    global $default_options;
-
     // Delete saved options
-    foreach ($default_options as $option => $value) {
+    foreach (cgit_wp_events::get_options() as $option => $value) {
         delete_option($option);
     }
 

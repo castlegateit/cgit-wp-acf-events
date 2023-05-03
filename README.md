@@ -1,6 +1,6 @@
 # Castlegate IT WP Events #
 
-An events management plugin for WordPress. Installing and activating the plugin will create an event post type, which is available to users in the WordPress admin panel. If either [Advanced Custom Fields](http://www.advancedcustomfields.com/) or [Human Made Custom Meta Boxes plugin](https://github.com/humanmade/Custom-Meta-Boxes) is installed, this plugin will provide relevant fields for event dates, times, locations, and prices. It also defines category and tag taxonomies.
+An events management plugin for WordPress. Installing and activating the plugin will create an event post type, which is available to users in the WordPress admin panel. The plugin uses [Advanced Custom Fields](https://www.advancedcustomfields.com/) to provide relevant fields for event dates, times, locations, and prices.
 
 ## Events ##
 
@@ -12,8 +12,7 @@ The Events Settings menu, which appears within the main Settings menu, lets you 
 
 ## Filters ##
 
-You can use filters to amend the plugin output:
-
+*   `cgit_wp_events_options`: override the post type features and category taxonomy (this will disable the options on the plugin settings page)
 *   `cgit_wp_events_format_day`: [format](http://php.net/manual/en/function.date.php) for days in the calendar
 *   `cgit_wp_events_class_prefix`: class name prefix for the events calendar
 *   `cgit_wp_events_format_current_month`: [format](http://php.net/manual/en/function.date.php) for the current month in the calendar
@@ -68,10 +67,6 @@ Note: Event counts include the number of events running within a given month, th
 ## Widget ##
 
 If your theme supports widgets, the events calendar can also be added as a widget.
-
-## UK dates ##
-
-If the [CMB UK date field plugin](https://github.com/castlegateit/cgit-wp-cmb-ukdate) plugin is installed and you are using the Custom Meta Boxes plugin, the start and end dates will use that field type. If not, they will use the standard Unix date field.
 
 ## License
 

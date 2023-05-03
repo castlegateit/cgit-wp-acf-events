@@ -4,16 +4,137 @@
  * Static classes for global variable access
  */
 class cgit_wp_events {
+    private const FILTER = 'cgit_wp_events_options';
+    private const PREFIX = 'cgit_wp_events_post_type_support_';
 
-    public static $options = array(
-        'cgit_wp_events_post_type_support_category' => '1',
-        'cgit_wp_events_post_type_support_editor' => '1',
-        'cgit_wp_events_post_type_support_excerpt' => '1',
-        'cgit_wp_events_post_type_support_author' => '',
-        'cgit_wp_events_post_type_support_thumbnail' => '',
-        'cgit_wp_events_post_type_support_comments' => '',
-        'cgit_wp_events_post_type_support_page-attributes' => ''
-    );
+    /**
+     * Generic options and their default values
+     *
+     * @var array
+     */
+    private static $args = [
+        'category' => true,
+        'editor' => true,
+        'excerpt' => true,
+        'author' => true,
+        'thumbnail' => true,
+        'comments' => false,
+        'page-attributes' => false,
+    ];
+
+    /**
+     * Option labels
+     *
+     * @var array
+     */
+    private static $labels = [
+        'category' => 'Categories',
+        'editor' => 'Content editor',
+        'excerpt' => 'Excerpt',
+        'author' => 'Author',
+        'thumbnail' => 'Thumbnail',
+        'comments' => 'Comments',
+        'page-attributes' => 'Page attributes',
+    ];
+
+    /**
+     * Return generic options and values
+     *
+     * If a filter exists, use that to edit the option values. Otherwise, load
+     * the option values from the database.
+     *
+     * @return array
+     */
+    private static function args() {
+        $args = self::$args;
+
+        if (self::has_filter()) {
+            $args = apply_filters(self::FILTER, $args);
+        } else {
+            foreach ($args as $key => $value) {
+                $args[$key] = get_option(self::PREFIX . $key, $value);
+            }
+        }
+
+        $args = array_intersect_key($args, self::$args);
+        $args = array_merge(self::$args, $args);
+
+        return $args;
+    }
+
+    /**
+     * Return database option values
+     *
+     * @return array
+     */
+    public static function get_options() {
+        $options = [];
+
+        foreach (self::args() as $key => $value) {
+            $options[self::PREFIX . $key] = $value ? '1' : '';
+        }
+
+        return $options;
+    }
+
+    /**
+     * Return post type supports parameters
+     *
+     * @return array
+     */
+    public static function get_post_type_supports_args() {
+        $args = array_filter(self::args());
+        $args = array_diff_key($args, ['category' => null]);
+        $args = array_keys($args);
+
+        $args = array_merge([
+            'title',
+            'revisions',
+        ], $args);
+
+        return $args;
+    }
+
+    /**
+     * Return label for an option key
+     *
+     * @return string|null
+     */
+    public static function get_label($key) {
+        $keys = (array) $key;
+
+        if (strpos($key, self::PREFIX) === 0) {
+            $keys[] = substr($key, strlen(self::PREFIX));
+        } else {
+            $keys[] = self::PREFIX . $key;
+        }
+
+        foreach ($keys as $key) {
+            if (array_key_exists($key, self::$labels)) {
+                return self::$labels[$key];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Option filter has been set?
+     *
+     * @return bool
+     */
+    public static function has_filter() {
+        return has_filter(self::FILTER);
+    }
+
+    /**
+     * Category taxonomy has been enabled?
+     *
+     * @return bool
+     */
+    public static function has_category_taxonomy() {
+        return (bool) (self::args()['category'] ?? false);
+    }
 }
 
 
@@ -27,8 +148,8 @@ class cgit_wp_events {
  */
 function cgit_wp_events_register_settings()
 {
-    foreach (cgit_wp_events::$options as $option => $v) {
-        register_setting('cgit-events', $option);
+    foreach (cgit_wp_events::get_options() as $key => $value) {
+        register_setting('cgit-events', $key);
     }
 }
 
@@ -69,93 +190,51 @@ add_action('admin_menu', 'cgit_wp_events_add_settings_page');
  * @return void
  */
 function cgit_wp_events_render_settings_page() {
-?>
+    ?>
 
-<div class="wrap">
+    <div class="wrap">
+        <h2>Events Settings</h2>
 
-    <h2>Events Settings</h2>
+        <?php
 
-    <form action="options.php" method="post">
+        if (cgit_wp_events::has_filter()) {
+            ?>
+            <p><i>Events options have been set via a filter and cannot be edited here.</i></p>
+            <?php
+        } else {
+            ?>
+            <form action="options.php" method="post">
+                <?php settings_fields('cgit-events') ?>
 
-        <?php settings_fields('cgit-events'); ?>
+                <h3>Interface</h3>
 
-        <h3>Interface</h3>
+                <table class="form-table">
+                    <tr>
+                        <th>Enable</th>
 
-        <table class="form-table">
+                        <td>
+                            <?php
 
-            <tr>
-                <th rowspan="10">
-                    Enable
-                </th>
-                <td>
-                    <label>
-                        <input type="checkbox" name="cgit_wp_events_post_type_support_category" value="1"<?php echo get_option('cgit_wp_events_post_type_support_category') ? ' checked="checked"' : ''; ?> />
-                        Categories
-                    </label>
-                </td>
-            </tr>
+                            foreach (cgit_wp_events::get_options() as $key => $value) {
+                                $label = cgit_wp_events::get_label($key) ?: $key;
 
-            <tr>
-                <td>
-                    <label>
-                        <input type="checkbox" name="cgit_wp_events_post_type_support_editor" value="1"<?php echo get_option('cgit_wp_events_post_type_support_editor') ? ' checked="checked"' : ''; ?> />
-                        Content editor
-                    </label>
-                </td>
-            </tr>
+                                ?>
+                                <p><label><input type="checkbox" name="<?= $key ?>" value="1" <?= $value ? 'checked' : '' ?>> <?= $label ?></label></p>
+                                <?php
+                            }
 
-            <tr>
-                <td>
-                    <label>
-                        <input type="checkbox" name="cgit_wp_events_post_type_support_excerpt" value="1"<?php echo get_option('cgit_wp_events_post_type_support_excerpt') ? ' checked="checked"' : ''; ?> />
-                        Excerpt
-                    </label>
-                </td>
-            </tr>
+                            ?>
+                        </td>
+                    </tr>
+                </table>
 
-            <tr>
-                <td>
-                    <label>
-                        <input type="checkbox" name="cgit_wp_events_post_type_support_author" value="1"<?php echo get_option('cgit_wp_events_post_type_support_author') ? ' checked="checked"' : ''; ?> />
-                        Author
-                    </label>
-                </td>
-            </tr>
+                <?php submit_button() ?>
+            </form>
+            <?php
+        }
 
-            <tr>
-                <td>
-                    <label>
-                        <input type="checkbox" name="cgit_wp_events_post_type_support_thumbnail" value="1"<?php echo get_option('cgit_wp_events_post_type_support_thumbnail') ? ' checked="checked"' : ''; ?> />
-                        Thumbnail
-                    </label>
-                </td>
-            </tr>
+        ?>
+    </div>
 
-            <tr>
-                <td>
-                    <label>
-                        <input type="checkbox" name="cgit_wp_events_post_type_support_comments" value="1"<?php echo get_option('cgit_wp_events_post_type_support_comments') ? ' checked="checked"' : ''; ?> />
-                        Comments
-                    </label>
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    <label>
-                        <input type="checkbox" name="cgit_wp_events_post_type_support_page-attributes" value="1"<?php echo get_option('cgit_wp_events_post_type_support_page-attributes') ? ' checked="checked"' : ''; ?> />
-                        Page attributes
-                    </label>
-                </td>
-            </tr>
-
-        </table>
-
-        <?php submit_button(); ?>
-
-    </form>
-
-</div>
-
-<?php
+    <?php
 }
