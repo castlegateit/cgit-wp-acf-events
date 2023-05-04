@@ -5,6 +5,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    // Set initial year and month
+    let today = new Date();
+
+    calendar.dataset.year = today.getFullYear();
+    calendar.dataset.month = today.getMonth() + 1;
+
+    if (typeof calendar.dataset.cgitEventsYear !== 'undefined') {
+        calendar.dataset.year = parseInt(calendar.dataset.cgitEventsYear, 10);
+    }
+
+    if (typeof calendar.dataset.cgitEventsMonth !== 'undefined') {
+        calendar.dataset.month = parseInt(calendar.dataset.cgitEventsMonth, 10);
+    }
+
     // Redraw calendar with response data
     function draw(response) {
         let current = document.querySelector('.cgit-events-current');
