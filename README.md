@@ -21,6 +21,24 @@ The Events Settings menu, which appears within the main Settings menu, lets you 
 *   `cgit_wp_events_format_next_month`: next month calendar text
 *   `cgit_wp_events_format_prev_month`: previous month calendar text
 
+### Examples
+
+Override default post type and taxonomy options (and disable options GUI):
+
+``` php
+add_filter('cgit_wp_events_options', function ($options) {
+    return [
+        'category' => true,
+        'editor' => true,
+        'excerpt' => true,
+        'author' => true,
+        'thumbnail' => true,
+        'comments' => false,
+        'page-attributes' => false,
+    ];
+});
+```
+
 ## Functions ##
 
 ### Calendar ###
