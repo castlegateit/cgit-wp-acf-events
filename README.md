@@ -20,6 +20,9 @@ The Events Settings menu, which appears within the main Settings menu, lets you 
 *   `cgit_wp_events_format_prev_year`: previous year calendar text
 *   `cgit_wp_events_format_next_month`: next month calendar text
 *   `cgit_wp_events_format_prev_month`: previous month calendar text
+*   `cgit_wp_events_date_range_formats`: array of date formats used by the `cgit_wp_events_get_event_date_range` function
+*   `cgit_wp_events_time_format`: time format used by the `cgit_wp_events_get_event_time_range` function
+*   `cgit_wp_events_dash`: dash or separator used by the date and time range functions
 
 ### Examples
 
@@ -36,6 +39,29 @@ add_filter('cgit_wp_events_options', function ($options) {
         'comments' => false,
         'page-attributes' => false,
     ];
+});
+```
+
+Override date and time range formats:
+
+``` php
+add_filter('cgit_wp_events_dash', function ($dash) {
+    return ' to '; // replace dash with text
+});
+
+add_filter('cgit_wp_events_date_range_formats', function ($formats) {
+    return [
+        'y' => 'Y',         // year only
+        'm' => 'F',         // month only
+        'd' => 'j',         // day only
+        'dm' => 'j F',      // day and month
+        'my' => 'F Y',      // month and year
+        'dmy' => 'j F Y',   // day, month, and year
+    ];
+});
+
+add_filter('cgit_wp_events_get_event_time_range', function ($format) {
+    return 'H:i'; // time format
 });
 ```
 
@@ -81,6 +107,11 @@ Example list generation:
     <?php endforeach ?>
 
 Note: Event counts include the number of events running within a given month, therefore you cannot total this count to display a count per year.
+
+## Date and time ranges
+
+*   `cgit_wp_events_get_event_date_range(int $event_id = null): ?string` returns a date range for the specified event (or the current event if none is specified).
+*   `cgit_wp_events_get_event_time_range(int $event_id = null): ?string` returns a time range for the specified event (or the current event if none is specified).
 
 ## Widget ##
 
