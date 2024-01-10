@@ -5,27 +5,39 @@ Plugin Name: Castlegate IT WP ACF Events
 Plugin URI: https://github.com/castlegateit/cgit-wp-acf-events/
 Description: A simple and easy to use events interface with complete developer
 control.
-Version: 1.8.1
+Version: 2.0.0-dev
 Author: Castlegate IT
 Author URI: http://www.castlegateit.co.uk/
 */
 
+use Castlegate\AcfEvents\Plugin;
 
-/**
- * Constants
- */
+if (!defined('ABSPATH')) {
+    wp_die('Access denied');
+}
+
+// Plugin constants
+define('CGIT_WP_ACF_EVENTS_VERSION', '2.0.0-dev');
+define('CGIT_WP_ACF_EVENTS_PLUGIN_FILE', __FILE__);
+define('CGIT_WP_ACF_EVENTS_PLUGIN_DIR', __DIR__);
+
+// Legacy constants
 define('CGIT_EVENTS_POST_TYPE', 'event');
 define('CGIT_EVENTS_POST_TYPE_CATEGORY', 'event-category');
 
 
+require_once __DIR__ . '/classes/autoload.php';
+
+Plugin::init();
+
+
+
 /**
- * Include
+ * Include old files (to be refactored)
  */
 include('admin-options.php');
 include('post-type.php');
-include('fields.php');
 include('rewrite.php');
-include('query.php');
 include('activation.php');
 include('calendar.php');
 include('widget.php');

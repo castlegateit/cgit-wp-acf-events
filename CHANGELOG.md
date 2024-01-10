@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.0-dev (2024-01-10)
+
+### Fixed
+
+* Fixed yearly and monthly archives not display any results
+* Fixed future archives not displaying the correct events
+* Fixed broken archive links in calendar
+
+### Changed
+
+* Refactored field logic and improved filtering
+* Refactored query logic and improved filtering
+* Introduced class-based code organisation
+
 ## 1.8.1 (2023-07-05)
 
 ### Fixed

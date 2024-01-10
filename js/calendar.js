@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Update current date indicator and link
         current.querySelector('span').innerHTML = response.current;
-        current.querySelector('a').setAttribute('href', '/event/' + response.year + '/' + response.month);
+        current.querySelector('a').setAttribute('href', '/events/' + response.year + '/' + response.month);
 
         // Update all cells in calendar table
         let i = 0;
