@@ -54,7 +54,7 @@ class Query
         }
 
         // Apply to main query only
-        if (!$query->is_main_query() && is_admin()) {
+        if (!$query->is_main_query() || is_admin()) {
             return;
         }
 
@@ -377,6 +377,14 @@ class Query
      */
     public static function filterWhere(string $where, WP_Query $query)
     {
+        // Override action name
+        $filter = 'cgit_wp_acf_events_query_where_override';
+
+        // Override query?
+        if (has_filter($filter)) {
+            return apply_filters($filter, $where, $query);
+        }
+
         // Filter applies to front end queries only.
         if (is_admin()) {
             return $where;
