@@ -42,7 +42,6 @@ include('activation.php');
 include('calendar.php');
 include('widget.php');
 include('ajax.php');
-include('save.php');
 
 require_once __DIR__ . '/functions.php';
 

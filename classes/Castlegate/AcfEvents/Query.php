@@ -117,7 +117,7 @@ class Query
                     'key' => 'start_date',
                     'value' => $end->format($format),
                     'type' => 'DATE',
-                    'compare' => '!='
+                    'compare' => '<='
                 ],
             ]
         );

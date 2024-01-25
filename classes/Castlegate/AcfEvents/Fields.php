@@ -22,6 +22,13 @@ class Fields
             'acf/init',
             [get_called_class(), 'fieldsLocation']
         );
+
+        // Apply a default end date
+        add_filter(
+            'save_post',
+            [get_called_class(), 'saveEndDate']
+        );
+
     }
 
     /**
@@ -167,6 +174,41 @@ class Fields
 
         // Register
         acf_add_local_field_group($fields);
+    }
+
+    /**
+     * When the event is being saved, but no end date is present, create one
+     * from the start date. End date is not a required field, but is required
+     * the event queries
+     *
+     * @param $post_id
+     * @return int
+     */
+    public static function saveEndDate($post_id): int {
+        $event = get_post($post_id);
+
+        // Ensure the correct post type
+        if ($event->post_type !== CGIT_EVENTS_POST_TYPE) {
+            return $post_id;
+        }
+
+        // Ensure we have a start and end date, otherwise don't bother
+        if (!isset($_POST['acf']['start_date'])
+            || !isset($_POST['acf']['end_date'])
+        ) {
+            return $post_id;
+        };
+
+        $start_date = $_POST['acf']['start_date'];
+        $end_date = $_POST['acf']['end_date'];
+
+        // Only continue with a start date and empty end date
+        if (empty($start_date) || !empty($end_date)) {
+            return $post_id;
+        }
+
+        update_field('end_date', $start_date, $post_id);
+        return $post_id;
     }
 
     /**
