@@ -97,16 +97,13 @@ class Query
         // DateTime for now
         $now = new DateTime('now');
 
-        // DateTime for end time
-        $end = (new DateTime('now'))->modify('+999 years');
-
         // Get date format
         $format = self::getQueryDateFormat();
 
         $query->set(
             'meta_query',
             [
-                'relation' => 'AND',
+                'relation' => 'OR',
                 [
                     'key' => 'start_date',
                     'value' => $now->format($format),
@@ -114,10 +111,10 @@ class Query
                     'compare' => '>='
                 ],
                 'order_by_clause' => [
-                    'key' => 'start_date',
-                    'value' => $end->format($format),
+                    'key' => 'end_date',
+                    'value' => $now->format($format),
                     'type' => 'DATE',
-                    'compare' => '<='
+                    'compare' => '>='
                 ],
             ]
         );
