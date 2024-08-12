@@ -23,6 +23,12 @@ add_action(
         $center_lat = $location[0];
         $center_lng = $location[1];
 
+        // If they've installed OpenStreetMap for ACF then let's assume they want to use that
+        $map_provider = 'google_map';
+        if (class_exists("ACFFieldOpenstreetmap\Field\OpenStreetMap")) {
+            $map_provider = 'open_street_map';
+        }
+
         // Add date and time fields
         $date_time_fields = array(
             'key' => 'cgit_wp_events_when',
@@ -116,7 +122,7 @@ add_action(
                     'key' => 'location',
                     'name' => 'location',
                     'label' => 'Location',
-                    'type' => 'google_map',
+                    'type' => $map_provider,
                     'center_lat' => $center_lat,
                     'center_lng' => $center_lng,
                 ),

@@ -117,6 +117,10 @@ Note: Event counts include the number of events running within a given month, th
 
 If your theme supports widgets, the events calendar can also be added as a widget.
 
+## Maps ##
+
+Each event has a location field which by default uses the ACF Google Map field. However if the ACF Open Street Map plugin is detected, this is used instead.
+
 ## License
 
 Released under the [MIT License](https://opensource.org/licenses/MIT). See [LICENSE](LICENSE) for details.
