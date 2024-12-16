@@ -260,7 +260,7 @@ function cgit_wp_events_query_main_listing($query)
         array(
             'relation' => 'AND',
             array(
-                'key' => 'start_date',
+                'key' => 'end_date',
                 'value' => $now->format($meta_date_format),
                 'type' => 'DATE',
                 'compare' => '>='
