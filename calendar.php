@@ -53,6 +53,13 @@ class Cgit_event_calendar {
      */
     private $options = array();
 
+    /**
+     * Show a full list of events for each day?
+     *
+     * @var bool
+     */
+    public bool $full = false;
+
     // -------------------------------------------------------------------------
 
     /**
@@ -119,7 +126,13 @@ class Cgit_event_calendar {
         $out.= " data-cgit-events-year=\"" . $this->year . "\"";
         $out.= " data-cgit-events-month=\"" . $this->month . "\">\n";
         $out.= $this->header();
-        $out.= $this->days();
+
+        if ($this->full) {
+            $out .= $this->getFullTableBody();
+        } else {
+            $out .= $this->days();
+        }
+
         $out.= "</table>";
 
         return $out;
@@ -464,6 +477,144 @@ class Cgit_event_calendar {
         return $data;
     }
 
+    /**
+     * Return tbody for the full calendar showing all events
+     *
+     * @return string
+     */
+    private function getFullTableBody(): string
+    {
+        $days = $this->getDays();
+        $weeks = array_chunk($days, 7);
+        $prefix = $this->options['class_prefix'] ?? '';
+
+        $max = apply_filters('cgit_wp_events_calendar_max_items', 3);
+        $plus_n_text = apply_filters('cgit_wp_events_calendar_plus_n_events', '+ %d events');
+        $plus_1_text = apply_filters('cgit_wp_events_calendar_plus_1_event', '+ 1 event');
+
+        $post_type = get_post_type_object(CGIT_EVENTS_POST_TYPE);
+
+        $path = implode('/', [
+            $post_type->rewrite['slug'] ?? CGIT_EVENTS_POST_TYPE,
+            $this->year,
+            $this->month,
+        ]);
+
+        ob_start();
+
+        ?>
+        <tbody>
+            <?php
+
+            foreach ($weeks as $days) {
+                ?>
+                <tr>
+                    <?php
+
+                    foreach ($days as $day) {
+                        $events = array_map(function ($event) {
+                            $event['id'] = (int) ($event['id'] ?? 0);
+                            $event['start_time'] = null;
+                            $event['end_time'] = null;
+
+                            if ($event['id']) {
+                                $event['start_time'] = get_field('start_time', $event['id']);
+                                $event['end_time'] = get_field('end_time', $event['id']);
+                            }
+
+                            return $event;
+                        }, (array) ($day['events'] ?? []));
+
+                        // Sort events by start time (all day events first)
+                        usort($events, function ($event_a, $event_b) {
+                            return $event_a['start_time'] <=> $event_b['start_time'];
+                        });
+
+                        // If the number of events is above a threshold value,
+                        // only output the first n events and show a "more
+                        // events" link underneath.
+                        $more_title = null;
+                        $more_url = null;
+
+                        if (count($events) > $max) {
+                            $diff = count($events) - $max;
+
+                            if ($diff === 1) {
+                                $more_title = $plus_1_text;
+                            } else {
+                                $more_title = sprintf($plus_n_text, $diff);
+                            }
+
+                            $more_url = home_url('/' . $path . '/' . $day['date'] . '/');
+                            $events = array_slice($events, 0, $max);
+                        }
+
+                        ?>
+                        <td class="<?= esc_attr($day['class'] ?? '') ?>">
+                            <div class="<?= esc_attr($prefix . 'day-date') ?>">
+                                <?= esc_html($day['date'] ?? '') ?>
+                            </div>
+
+                            <?php
+
+                            foreach ($events as $event) {
+                                if (!$event['id']) {
+                                    continue;
+                                }
+
+                                $time = null;
+
+                                if ($event['start_time']) {
+                                    $date = DateTime::createFromFormat('H:i', $event['start_time']);
+                                    $time = $date->format(apply_filters('cgit_wp_events_calendar_time_format', 'H:i'));
+                                }
+
+                                ?>
+                                <a href="<?= esc_url(get_permalink($event['id'])) ?>" class="<?= esc_attr($prefix . 'day-event') ?>">
+                                    <?php
+
+                                    if ($time) {
+                                        ?>
+                                        <span class="<?= esc_attr($prefix . 'day-event-time') ?>">
+                                            <?= esc_html($time) ?>
+                                        </span>
+                                        <?php
+                                    }
+
+                                    ?>
+
+                                    <span class="<?= esc_attr($prefix . 'day-event-text') ?>">
+                                        <?= esc_html(get_the_title($event['id'])) ?>
+                                    </span>
+                                </a>
+                                <?php
+                            }
+
+                            if ($more_title && $more_url) {
+                                ?>
+                                <a href="<?= esc_url($more_url) ?>" class="<?= esc_attr($prefix . 'day-more') ?>">
+                                    <?= esc_html($more_title) ?>
+                                </a>
+                                <?php
+                            }
+
+                            ?>
+                        </td>
+                        <?php
+                    }
+
+                    ?>
+                </tr>
+                <?php
+            }
+
+            ?>
+        </tbody>
+        <?php
+
+        return ob_get_clean();
+    }
+
     // -------------------------------------------------------------------------
 
     /**
@@ -472,18 +623,25 @@ class Cgit_event_calendar {
      * @author Castlgate IT <info@castlegateit.co.uk>
      * @author Andy Reading
      *
-     * @return array
+     * @return string
      */
     public function getAjax()
     {
         $current = new DateTime($this->year . '-' . $this->month . '-01');
 
-        return array(
+        $data = [
             'year' => $this->year,
             'month' => $this->month,
-            'days' => $this->getDays(),
-            'current' => $current->format($this->options['current_month'])
-        );
+            'current' => $current->format($this->options['current_month']),
+        ];
+
+        if ($this->full) {
+            $data['body'] = $this->getFullTableBody();
+        } else {
+            $data['days'] = $this->getDays();
+        }
+
+        return json_encode($data);
     }
 
     // -------------------------------------------------------------------------
@@ -500,14 +658,18 @@ class Cgit_event_calendar {
     private function c($index)
     {
         $return = array();
-
         $classes = explode(',', $index);
+        $prefix = $this->options['class_prefix'];
 
         foreach ($classes as $class) {
             if (isset($this->class[trim($class)])) {
                 $return[] = $this->options['class_prefix']
                     . $this->class[$class];
             }
+        }
+
+        if ($this->full && $index === 'ca') {
+            $return[] = $prefix . 'calendar-full';
         }
 
         return implode(' ', $return);

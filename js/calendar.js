@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    const full = calendar.classList.contains('cgit-events-calendar-full');
+
     // Set initial year and month
     let today = new Date();
 
@@ -31,6 +33,16 @@ document.addEventListener('DOMContentLoaded', function () {
         // Update current date indicator and link
         current.querySelector('span').innerHTML = response.current;
         current.querySelector('a').setAttribute('href', '/event/' + response.year + '/' + response.month);
+
+        // Update full table body?
+        if (typeof response.body !== 'undefined') {
+            const template = document.createElement('template');
+
+            template.innerHTML = response.body.trim();
+            calendar.querySelector('tbody').replaceWith(template.content.firstChild);
+
+            return;
+        }
 
         // Update all cells in calendar table
         let i = 0;
@@ -85,6 +97,10 @@ document.addEventListener('DOMContentLoaded', function () {
         form.append('action', 'cgit_events_calendar');
         form.append('year', data.year);
         form.append('month', data.month);
+
+        if (full) {
+            form.append('full', 1);
+        }
 
         request.open(method, url, true);
 

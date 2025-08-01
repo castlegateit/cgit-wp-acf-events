@@ -5,7 +5,7 @@ Plugin Name: Castlegate IT WP ACF Events
 Plugin URI: https://github.com/castlegateit/cgit-wp-acf-events/
 Description: A simple and easy to use events interface with complete developer
 control.
-Version: 1.8.2
+Version: 1.9.0
 Author: Castlegate IT
 Author URI: http://www.castlegateit.co.uk/
 */
@@ -50,9 +50,10 @@ register_uninstall_hook(__FILE__, 'cgit_wp_events_uninstall');
  * @author Castlgate IT <info@castlegateit.co.uk>
  * @author Andy Reading
  *
+ * @param bool $full Show a full list of events for each day?
  * @return string
  */
-function cgit_wp_events_calendar()
+function cgit_wp_events_calendar(bool $full = false)
 {
     // Get the current year and month or set a default
     $year = isset($_GET['cgit-year']) ? $_GET['cgit-year'] : date('Y');
@@ -66,6 +67,7 @@ function cgit_wp_events_calendar()
 
     // New calendar instance
     $events_calendar = new Cgit_event_calendar($year, $month);
+    $events_calendar->full = $full;
 
     return  $events_calendar->render();
 }

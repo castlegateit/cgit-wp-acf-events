@@ -23,6 +23,10 @@ The Events Settings menu, which appears within the main Settings menu, lets you 
 *   `cgit_wp_events_date_range_formats`: array of date formats used by the `cgit_wp_events_get_event_date_range` function
 *   `cgit_wp_events_time_format`: time format used by the `cgit_wp_events_get_event_time_range` function
 *   `cgit_wp_events_dash`: dash or separator used by the date and time range functions
+*   `cgit_wp_events_calendar_max_items`: maximum number of events to display per day in the full calendar before showing the "+ n events" link. Default is 3.
+*   `cgit_wp_events_calendar_plus_n_events`: text of the "+ n events" link in the full calendar, with `%d` as the placeholder for the number of events.
+*   `cgit_wp_events_calendar_plus_1_event`: text of the "+ 1 event" link in the full calendar.
+*   `cgit_wp_events_calendar_time_format`: time format used for events in the full calendar.
 
 ### Examples
 
@@ -70,6 +74,12 @@ add_filter('cgit_wp_events_get_event_time_range', function ($format) {
 ### Calendar ###
 
 The plugin provides the `cgit_wp_events_calendar()` function to return the full HTML events calendar. The necessary JavaScript will be enqueued automatically for the next and previous links.
+
+By default, the `cgit_wp_events_calendar()` function will return a simple calendar with a single link to the day archive if a day has any events. When the `full` parameter is set to `true`, the calendar will output a list of events in each day, suitable for a full width calendar.
+
+``` php
+echo cgit_wp_events_calendar(full: true);
+```
 
 ### Archives ###
 

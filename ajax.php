@@ -42,7 +42,9 @@ function cgit_events_calendar_callback()
             $month
         );
 
-        echo json_encode($calendar->getAjax());
+        $calendar->full = (bool) ($_POST['full'] ?? false);
+
+        echo $calendar->getAjax();
     }
     wp_die();
 }
