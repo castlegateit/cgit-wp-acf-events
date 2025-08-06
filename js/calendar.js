@@ -7,6 +7,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const full = calendar.classList.contains('cgit-events-calendar-full');
 
+    const minYear = parseInt(calendar.dataset.cgitEventsMinYear, 10);
+    const minMonth = parseInt(calendar.dataset.cgitEventsMinMonth, 10);
+    const maxYear = parseInt(calendar.dataset.cgitEventsMaxYear, 10);
+    const maxMonth = parseInt(calendar.dataset.cgitEventsMaxMonth, 10);
+
+    let prevYearLink;
+    let prevMonthLink;
+    let nextYearLink;
+    let nextMonthLink;
+
     // Set initial year and month
     let today = new Date();
 
@@ -20,6 +30,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof calendar.dataset.cgitEventsMonth !== 'undefined') {
         calendar.dataset.month = parseInt(calendar.dataset.cgitEventsMonth, 10);
     }
+
+    // Initialize previous and next links
+    initPrevNextLinks();
 
     // Redraw calendar with response data
     function draw(response) {
@@ -113,43 +126,104 @@ document.addEventListener('DOMContentLoaded', function () {
         request.send(form);
     }
 
-    // Show next year
-    document.querySelector('.cgit-events-next-year').addEventListener('click', function (e) {
-        e.preventDefault();
+    // Initialize previous and next links
+    function initPrevNextLinks() {
+        prevYearLink = document.querySelector('.cgit-events-prev-year a');
+        prevMonthLink = document.querySelector('.cgit-events-prev-month a');
+        nextYearLink = document.querySelector('.cgit-events-next-year a');
+        nextMonthLink = document.querySelector('.cgit-events-next-month a');
 
-        send({
-            year: parseInt(calendar.dataset.year, 10) + 1,
-            month: parseInt(calendar.dataset.month, 10)
+        // Check links exist
+        if (!prevYearLink) {
+            prevYearLink = document.createElement('a');
+            prevYearLink.innerHTML = '&laquo;';
+            prevYearLink.setAttribute('href', '#');
+            document.querySelector('.cgit-events-prev-year').append(prevYearLink);
+        }
+
+        if (!prevMonthLink) {
+            prevMonthLink = document.createElement('a');
+            prevMonthLink.innerHTML = '&lsaquo;';
+            prevMonthLink.setAttribute('href', '#');
+            document.querySelector('.cgit-events-prev-month').append(prevMonthLink);
+        }
+
+        if (!nextYearLink) {
+            nextYearLink = document.createElement('a');
+            nextYearLink.innerHTML = '&raquo;';
+            nextYearLink.setAttribute('href', '#');
+            document.querySelector('.cgit-events-next-year').append(nextYearLink);
+        }
+
+        if (!nextMonthLink) {
+            nextMonthLink = document.createElement('a');
+            nextMonthLink.innerHTML = '&rsaquo;';
+            nextMonthLink.setAttribute('href', '#');
+            document.querySelector('.cgit-events-next-month').append(nextMonthLink);
+        }
+
+        // Get AJAX response on click or do nothing if target date is before the
+        // earliest event or after than the latest event.
+        prevYearLink.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            let destYear = parseInt(calendar.dataset.year, 10) - 1;
+            let destMonth = parseInt(calendar.dataset.month, 10);
+
+            if (destYear < minYear) {
+                return;
+            }
+
+            send({ year: destYear, month: destMonth });
         });
-    });
 
-    // Show previous year
-    document.querySelector('.cgit-events-prev-year').addEventListener('click', function (e) {
-        e.preventDefault();
+        prevMonthLink.addEventListener('click', function (e) {
+            e.preventDefault();
 
-        send({
-            year: parseInt(calendar.dataset.year, 10) - 1,
-            month: parseInt(calendar.dataset.month, 10)
+            let destYear = parseInt(calendar.dataset.year, 10);
+            let destMonth = parseInt(calendar.dataset.month, 10) - 1;
+
+            if (destMonth < 1) {
+                destYear = destYear - 1;
+                destMonth = 12;
+            }
+
+            if (destYear < minYear || (destYear === minYear && destMonth < minMonth)) {
+                return;
+            }
+
+            send({ year: destYear, month: destMonth });
         });
-    });
 
-    // Show next month
-    document.querySelector('.cgit-events-next-month').addEventListener('click', function (e) {
-        e.preventDefault();
+        nextYearLink.addEventListener('click', function (e) {
+            e.preventDefault();
 
-        send({
-            year: parseInt(calendar.dataset.year, 10),
-            month: parseInt(calendar.dataset.month, 10) + 1
+            let destYear = parseInt(calendar.dataset.year, 10) + 1;
+            let destMonth = parseInt(calendar.dataset.month, 10);
+
+            if (destYear > maxYear) {
+                return;
+            }
+
+            send({ year: destYear, month: destMonth });
         });
-    });
 
-    // Show previous month
-    document.querySelector('.cgit-events-prev-month').addEventListener('click', function (e) {
-        e.preventDefault();
+        nextMonthLink.addEventListener('click', function (e) {
+            e.preventDefault();
 
-        send({
-            year: parseInt(calendar.dataset.year, 10),
-            month: parseInt(calendar.dataset.month, 10) - 1
+            let destYear = parseInt(calendar.dataset.year, 10);
+            let destMonth = parseInt(calendar.dataset.month, 10) + 1;
+
+            if (destMonth > 12) {
+                destYear = destYear + 1;
+                destMonth = 1;
+            }
+
+            if (destYear > maxYear || (destYear === maxYear && destMonth > maxMonth)) {
+                return;
+            }
+
+            send({ year: destYear, month: destMonth });
         });
-    });
+    }
 });
