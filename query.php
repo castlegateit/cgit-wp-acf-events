@@ -45,7 +45,7 @@ add_filter('posts_where', function ($where, $query) {
     }
 
     // Apply the filter to the main query.
-    if ($query->is_main_query()) {
+    if ($query->is_main_query() || ($query->query['facetwp'] ?? false)) {
         if (is_post_type_archive(CGIT_EVENTS_POST_TYPE)) {
 
             // Year archive
