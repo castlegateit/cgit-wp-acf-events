@@ -8,7 +8,7 @@ declare(strict_types=1);
  * @param int|null $event_id
  * @return int|null
  */
-function cgit_wp_events_sanitize_event_id(int $event_id = null): ?int
+function cgit_wp_events_sanitize_event_id(?int $event_id = null): ?int
 {
     if (is_null($event_id)) {
         $event_id = get_the_ID();
@@ -83,7 +83,7 @@ function cgit_wp_events_dash(): string
  * @param int|null $event_id
  * @return string|null
  */
-function cgit_wp_events_get_event_date_range(int $event_id = null): ?string
+function cgit_wp_events_get_event_date_range(?int $event_id = null): ?string
 {
     $event_id = cgit_wp_events_sanitize_event_id($event_id);
 
@@ -115,7 +115,7 @@ function cgit_wp_events_get_event_date_range(int $event_id = null): ?string
  * @param int|null $event_id
  * @return string|null
  */
-function cgit_wp_events_get_event_time_range(int $event_id = null): ?string
+function cgit_wp_events_get_event_time_range(?int $event_id = null): ?string
 {
     $event_id = cgit_wp_events_sanitize_event_id($event_id);
 
