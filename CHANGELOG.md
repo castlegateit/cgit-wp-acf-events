@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.9.5 (2026-10-13)
+
+### Added
+
+*   Added the `cgit_wp_events_calendar_link_events` filter to link calendar days to the day archive instead of directly to events.
+*   Added a `Disallow` rule for calendar navigation URLs to the WordPress virtual robots.txt.
+
+### Changed
+
+*   Calendar JavaScript is now deferred and versioned with the plugin version number.
+*   The calendar now starts on the month being viewed on event date archives.
+*   Calendar previous/next month and year links now have `rel="nofollow"` to discourage crawling.
+
+### Fixed
+
+*   Return a 404 for calendar query strings, date archives and AJAX requests outside the range of event dates.
+*   Fixed calendar previous/next month links not rolling over the year (e.g. month 13 when viewing December).
+*   Fixed calendar links to the first and last months being hidden when events start or end mid-month.
+*   Fixed previous/next year links going beyond the earliest and latest event months.
+*   Fixed calendar navigation links not updating their URLs or hiding at the earliest and latest event months after AJAX navigation.
+*   Use the WordPress table prefix when finding the earliest and latest event dates.
+
 ## 1.9.4 (2026-06-02)
 
 ### Fixed

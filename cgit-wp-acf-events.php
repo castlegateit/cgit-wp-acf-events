@@ -5,7 +5,7 @@ Plugin Name: Castlegate IT WP ACF Events
 Plugin URI: https://github.com/castlegateit/cgit-wp-acf-events/
 Description: A simple and easy to use events interface with complete developer
 control.
-Version: 1.9.4
+Version: 1.9.5
 Author: Castlegate IT
 Author URI: http://www.castlegateit.co.uk/
 */
@@ -14,6 +14,7 @@ Author URI: http://www.castlegateit.co.uk/
 /**
  * Constants
  */
+define('CGIT_EVENTS_VERSION', '1.9.5');
 define('CGIT_EVENTS_POST_TYPE', 'event');
 define('CGIT_EVENTS_POST_TYPE_CATEGORY', 'event-category');
 
@@ -26,6 +27,7 @@ include('post-type.php');
 include('fields.php');
 include('rewrite.php');
 include('query.php');
+include('robots.php');
 include('activation.php');
 include('calendar.php');
 include('widget.php');
@@ -59,10 +61,20 @@ function cgit_wp_events_calendar(bool $full = false)
     $year = isset($_GET['cgit-year']) ? $_GET['cgit-year'] : date('Y');
     $month = isset($_GET['cgit-month']) ? $_GET['cgit-month'] : date('m');
 
+    // Start on the archive month when viewing an event date archive
+    if (!isset($_GET['cgit-year'])
+        && is_post_type_archive(CGIT_EVENTS_POST_TYPE)
+        && get_query_var('year')
+    ) {
+        $year = get_query_var('year');
+        $month = get_query_var('monthnum') ?: 1;
+    }
+
     // Prevent infinite indexing of calendar pages by restricting display to
-    // fifteen year in the past/future
-    if ($year > date('Y') + 15 || $year < date('Y') - 15) {
+    // the range of event dates
+    if (!cgit_wp_events_is_valid_calendar_date($year, $month)) {
         $year = date('Y');
+        $month = date('m');
     }
 
     // New calendar instance

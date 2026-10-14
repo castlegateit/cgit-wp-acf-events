@@ -1,6 +1,43 @@
 <?php
 
 /**
+ * Return a 404 for calendar and date archive requests outside the range of
+ * event dates. This prevents infinite crawling of empty calendar pages.
+ */
+add_filter('request', function ($query_vars) {
+    if (is_admin()) {
+        return $query_vars;
+    }
+
+    // Calendar navigation query string (any page may show the calendar)
+    if (isset($_GET['cgit-year']) || isset($_GET['cgit-month'])) {
+        $year = $_GET['cgit-year'] ?? date('Y');
+        $month = $_GET['cgit-month'] ?? date('m');
+
+        if (!cgit_wp_events_is_valid_calendar_date($year, $month)) {
+            return ['error' => '404'];
+        }
+    }
+
+    // Event date archives
+    if (($query_vars['post_type'] ?? null) === CGIT_EVENTS_POST_TYPE
+        && isset($query_vars['year'])
+    ) {
+        $valid = cgit_wp_events_is_valid_calendar_date(
+            $query_vars['year'],
+            $query_vars['monthnum'] ?? null,
+            $query_vars['day'] ?? null
+        );
+
+        if (!$valid) {
+            return ['error' => '404'];
+        }
+    }
+
+    return $query_vars;
+});
+
+/**
  * Rewrite the archive and category page queries to filter and order the posts
  * correctly.
  *

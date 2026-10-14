@@ -61,18 +61,18 @@ class Cgit_event_calendar {
     public bool $full = false;
 
     /**
-     * Earliest event date
+     * First month the calendar may display
      *
-     * @var DateTime
+     * @var DateTimeImmutable
      */
-    private DateTime $minDate;
+    private DateTimeImmutable $minDate;
 
     /**
-     * Latest event date
+     * Last month the calendar may display
      *
-     * @var DateTime
+     * @var DateTimeImmutable
      */
-    private DateTime $maxDate;
+    private DateTimeImmutable $maxDate;
 
     // -------------------------------------------------------------------------
 
@@ -132,42 +132,10 @@ class Cgit_event_calendar {
      */
     private function setMinMaxDate(): void
     {
-        global $wpdb;
+        $bounds = cgit_wp_events_get_calendar_bounds();
 
-        $this->minDate = new DateTime();
-        $this->maxDate = new DateTime();
-
-        $min = $wpdb->get_var($wpdb->prepare(
-            'SELECT MIN(meta_value) AS start_date
-                FROM %i AS m
-                JOIN %i AS p
-                ON m.post_id = p.ID
-                WHERE m.meta_key = "start_date"
-                AND p.post_type = "event"
-                AND p.post_status = "publish"',
-            'wp_postmeta',
-            'wp_posts'
-        ));
-
-        $max = $wpdb->get_var($wpdb->prepare(
-            'SELECT MAX(meta_value) AS start_date
-                FROM %i AS m
-                JOIN %i AS p
-                ON m.post_id = p.ID
-                WHERE m.meta_key = "end_date"
-                AND p.post_type = "event"
-                AND p.post_status = "publish"',
-            'wp_postmeta',
-            'wp_posts'
-        ));
-
-        if (is_string($min) && strlen($min) === 8) {
-            $this->minDate = DateTime::createFromFormat('Ymd', $min);
-        }
-
-        if (is_string($max) && strlen($max) === 8) {
-            $this->maxDate = DateTime::createFromFormat('Ymd', $max);
-        }
+        $this->minDate = $bounds['min'];
+        $this->maxDate = $bounds['max'];
     }
 
     // -------------------------------------------------------------------------
@@ -219,14 +187,13 @@ class Cgit_event_calendar {
             $this->year . '-' . $this->month . '-01 00:00:00'
         );
 
-        $prev_year = $this->year - 1;
-        $next_year = $this->year + 1;
-        $prev_month = $this->month - 1;
-        $next_month = $this->month + 1;
-
+        $prev_year_date = clone $current;
+        $next_year_date = clone $current;
         $prev_date = clone $current;
         $next_date = clone $current;
 
+        $prev_year_date->modify('-1 year');
+        $next_year_date->modify('+1 year');
         $prev_date->modify('-1 month');
         $next_date->modify('+1 month');
 
@@ -236,13 +203,13 @@ class Cgit_event_calendar {
         // Previous year
         $out.= "<th class=\"" . $this->c('co,py') . "\">";
 
-        if ($prev_year >= ((int) $this->minDate->format('Y'))) {
+        if ($prev_year_date >= $this->minDate) {
             $prev_year_link = http_build_query(array(
-                'cgit-year' => $prev_year,
-                'cgit-month' => $this->month
+                'cgit-year' => $prev_year_date->format('Y'),
+                'cgit-month' => $prev_year_date->format('n')
             ));
 
-            $out.= "<a href=\"?" . htmlentities($prev_year_link) . "\"><span>";
+            $out.= "<a rel=\"nofollow\" href=\"?" . htmlentities($prev_year_link) . "\"><span>";
             $out.= $this->options['format_prev_year'] . "</span></a>";
         }
 
@@ -253,11 +220,11 @@ class Cgit_event_calendar {
 
         if ($prev_date >= $this->minDate) {
             $prev_month_link = http_build_query(array(
-                'cgit-year' => $this->year,
-                'cgit-month' => $prev_month
+                'cgit-year' => $prev_date->format('Y'),
+                'cgit-month' => $prev_date->format('n')
             ));
 
-            $out.= "<a href=\"?" . htmlentities($prev_month_link) . "\"><span>";
+            $out.= "<a rel=\"nofollow\" href=\"?" . htmlentities($prev_month_link) . "\"><span>";
             $out.= $this->options['format_prev_month'] . "</span></a>";
         }
 
@@ -281,11 +248,11 @@ class Cgit_event_calendar {
 
         if ($next_date <= $this->maxDate) {
             $next_month_link = http_build_query(array(
-                'cgit-year' => $this->year,
-                'cgit-month' => $next_month
+                'cgit-year' => $next_date->format('Y'),
+                'cgit-month' => $next_date->format('n')
             ));
 
-            $out.= "<a href=\"?" . htmlentities($next_month_link) . "\"><span>";
+            $out.= "<a rel=\"nofollow\" href=\"?" . htmlentities($next_month_link) . "\"><span>";
             $out.= $this->options['format_next_month'] . "</span></a>";
         }
 
@@ -294,13 +261,13 @@ class Cgit_event_calendar {
         // Next year
         $out.= "<th class=\"" . $this->c('co,ny') . "\">";
 
-        if ($next_year <= ((int) $this->maxDate->format('Y'))) {
+        if ($next_year_date <= $this->maxDate) {
             $next_year_link = http_build_query(array(
-                'cgit-year' => $next_year,
-                'cgit-month' => $this->month
+                'cgit-year' => $next_year_date->format('Y'),
+                'cgit-month' => $next_year_date->format('n')
             ));
 
-            $out.= "<a href=\"?" . htmlentities($next_year_link) . "\"><span>";
+            $out.= "<a rel=\"nofollow\" href=\"?" . htmlentities($next_year_link) . "\"><span>";
             $out.= $this->options['format_next_year'] . "</span></a>";
         }
 
@@ -348,7 +315,7 @@ class Cgit_event_calendar {
             $out.= "<td class=\"" . $day['class'] . "\"><a";
 
             if ($day['events']) {
-                if (count($day['events']) == 1) {
+                if (count($day['events']) == 1 && $this->linkEvents()) {
                     $link = reset($day['events']);
                     $link = $link['permalink'];
                 } else {
@@ -577,6 +544,7 @@ class Cgit_event_calendar {
         $max = apply_filters('cgit_wp_events_calendar_max_items', 3);
         $plus_n_text = apply_filters('cgit_wp_events_calendar_plus_n_events', '+ %d events');
         $plus_1_text = apply_filters('cgit_wp_events_calendar_plus_1_event', '+ 1 event');
+        $link_events = $this->linkEvents();
 
         $post_type = get_post_type_object(CGIT_EVENTS_POST_TYPE);
 
@@ -656,7 +624,7 @@ class Cgit_event_calendar {
                                 }
 
                                 ?>
-                                <a href="<?= esc_url(get_permalink($event['id'])) ?>" class="<?= esc_attr($prefix . 'day-event') ?>">
+                                <a href="<?= esc_url($link_events ? get_permalink($event['id']) : $day['link']) ?>" class="<?= esc_attr($prefix . 'day-event') ?>">
                                     <?php
 
                                     if ($time) {
@@ -725,9 +693,23 @@ class Cgit_event_calendar {
             $data['body'] = $this->getFullTableBody();
         } else {
             $data['days'] = $this->getDays();
+            $data['link_events'] = $this->linkEvents();
         }
 
         return json_encode($data);
+    }
+
+    // -------------------------------------------------------------------------
+
+    /**
+     * Should days with a single event link directly to the event? If not, they
+     * link to the day archive.
+     *
+     * @return bool
+     */
+    private function linkEvents(): bool
+    {
+        return (bool) apply_filters('cgit_wp_events_calendar_link_events', true);
     }
 
     // -------------------------------------------------------------------------

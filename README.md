@@ -27,6 +27,7 @@ The Events Settings menu, which appears within the main Settings menu, lets you 
 *   `cgit_wp_events_calendar_plus_n_events`: text of the "+ n events" link in the full calendar, with `%d` as the placeholder for the number of events.
 *   `cgit_wp_events_calendar_plus_1_event`: text of the "+ 1 event" link in the full calendar.
 *   `cgit_wp_events_calendar_time_format`: time format used for events in the full calendar.
+*   `cgit_wp_events_calendar_link_events`: link calendar events directly to the event? Default is `true`. If `false`, days with a single event (and events in the full calendar) link to the day archive instead.
 
 ### Examples
 
@@ -126,6 +127,10 @@ Note: Event counts include the number of events running within a given month, th
 ## Widget ##
 
 If your theme supports widgets, the events calendar can also be added as a widget.
+
+## Search engines ##
+
+Calendar navigation links use `rel="nofollow"`, and the plugin adds `Disallow: /*cgit-year=` to the WordPress virtual robots.txt to stop search engines crawling calendar pages. If the site has a physical `robots.txt` file, WordPress does not use the virtual one, so add this rule to the file manually.
 
 ## Maps ##
 

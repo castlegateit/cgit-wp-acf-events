@@ -22,6 +22,121 @@ function cgit_wp_events_sanitize_event_id(?int $event_id = null): ?int
 }
 
 /**
+ * Return the range of months the calendar may display
+ *
+ * Runs from the month of the earliest event start date to the month of the
+ * latest event end date, extended to include the current month. Both dates are
+ * the first day of the month at midnight.
+ *
+ * @return array{min: DateTimeImmutable, max: DateTimeImmutable}
+ */
+function cgit_wp_events_get_calendar_bounds(): array
+{
+    static $bounds = null;
+
+    if (!is_null($bounds)) {
+        return $bounds;
+    }
+
+    global $wpdb;
+
+    $now = new DateTimeImmutable('first day of this month midnight');
+    $min = $now;
+    $max = $now;
+
+    $min_meta = $wpdb->get_var($wpdb->prepare(
+        'SELECT MIN(m.meta_value)
+            FROM %i AS m
+            JOIN %i AS p
+            ON m.post_id = p.ID
+            WHERE m.meta_key = "start_date"
+            AND p.post_type = %s
+            AND p.post_status = "publish"',
+        $wpdb->postmeta,
+        $wpdb->posts,
+        CGIT_EVENTS_POST_TYPE
+    ));
+
+    $max_meta = $wpdb->get_var($wpdb->prepare(
+        'SELECT MAX(m.meta_value)
+            FROM %i AS m
+            JOIN %i AS p
+            ON m.post_id = p.ID
+            WHERE m.meta_key = "end_date"
+            AND p.post_type = %s
+            AND p.post_status = "publish"',
+        $wpdb->postmeta,
+        $wpdb->posts,
+        CGIT_EVENTS_POST_TYPE
+    ));
+
+    if (is_string($min_meta) && preg_match('/^\d{8}$/', $min_meta)) {
+        $date = DateTimeImmutable::createFromFormat('!Ymd', $min_meta);
+
+        if ($date) {
+            $min = min($min, $date->modify('first day of this month'));
+        }
+    }
+
+    if (is_string($max_meta) && preg_match('/^\d{8}$/', $max_meta)) {
+        $date = DateTimeImmutable::createFromFormat('!Ymd', $max_meta);
+
+        if ($date) {
+            $max = max($max, $date->modify('first day of this month'));
+        }
+    }
+
+    $bounds = [
+        'min' => $min,
+        'max' => $max,
+    ];
+
+    return $bounds;
+}
+
+/**
+ * Is the date within the range the calendar may display?
+ *
+ * With a year only, the year must overlap the range. With a month, the month
+ * must be within the range. With a day, the date must also be valid.
+ *
+ * @param mixed $year
+ * @param mixed $month
+ * @param mixed $day
+ * @return bool
+ */
+function cgit_wp_events_is_valid_calendar_date($year, $month = null, $day = null): bool
+{
+    foreach ([$year, $month, $day] as $part) {
+        if (!is_null($part) && (!is_scalar($part) || !ctype_digit((string) $part))) {
+            return false;
+        }
+    }
+
+    $bounds = cgit_wp_events_get_calendar_bounds();
+    $year = (int) $year;
+
+    if (is_null($month)) {
+        return $year >= (int) $bounds['min']->format('Y')
+            && $year <= (int) $bounds['max']->format('Y');
+    }
+
+    $month = (int) $month;
+
+    if ($month < 1 || $month > 12) {
+        return false;
+    }
+
+    if (!is_null($day) && !checkdate($month, (int) $day, $year)) {
+        return false;
+    }
+
+    $date = (new DateTimeImmutable('midnight'))->setDate($year, $month, 1);
+
+    return $date >= $bounds['min'] && $date <= $bounds['max'];
+}
+
+/**
  * Return date range
  *
  * @param DateTime $start

@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initialize previous and next links
     initPrevNextLinks();
+    updatePrevNextLinks();
 
     // Redraw calendar with response data
     function draw(response) {
@@ -42,6 +43,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // Set current year and month based on response data
         calendar.dataset.year = response.year;
         calendar.dataset.month = response.month;
+
+        updatePrevNextLinks();
 
         // Update current date indicator and link
         current.querySelector('span').innerHTML = response.current;
@@ -68,9 +71,9 @@ document.addEventListener('DOMContentLoaded', function () {
             link.innerHTML = day.date;
 
             // Link to event(s)
-            if (day.events.length === 1) {
+            if (day.events.length === 1 && response.link_events !== false) {
                 link.setAttribute('href', day.events[0].permalink);
-            } else if (day.events.length > 1) {
+            } else if (day.events.length > 0) {
                 link.setAttribute('href', day.link);
             } else {
                 link.removeAttribute('href');
@@ -138,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
             prevYearLink = document.createElement('a');
             prevYearLink.innerHTML = '&laquo;';
             prevYearLink.setAttribute('href', '#');
+            prevYearLink.setAttribute('rel', 'nofollow');
             document.querySelector('.cgit-events-prev-year').append(prevYearLink);
         }
 
@@ -145,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
             prevMonthLink = document.createElement('a');
             prevMonthLink.innerHTML = '&lsaquo;';
             prevMonthLink.setAttribute('href', '#');
+            prevMonthLink.setAttribute('rel', 'nofollow');
             document.querySelector('.cgit-events-prev-month').append(prevMonthLink);
         }
 
@@ -152,6 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
             nextYearLink = document.createElement('a');
             nextYearLink.innerHTML = '&raquo;';
             nextYearLink.setAttribute('href', '#');
+            nextYearLink.setAttribute('rel', 'nofollow');
             document.querySelector('.cgit-events-next-year').append(nextYearLink);
         }
 
@@ -159,71 +165,65 @@ document.addEventListener('DOMContentLoaded', function () {
             nextMonthLink = document.createElement('a');
             nextMonthLink.innerHTML = '&rsaquo;';
             nextMonthLink.setAttribute('href', '#');
+            nextMonthLink.setAttribute('rel', 'nofollow');
             document.querySelector('.cgit-events-next-month').append(nextMonthLink);
         }
 
         // Get AJAX response on click or do nothing if target date is before the
         // earliest event or after than the latest event.
-        prevYearLink.addEventListener('click', function (e) {
-            e.preventDefault();
+        for (let [link, offset] of linkOffsets()) {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
 
-            let destYear = parseInt(calendar.dataset.year, 10) - 1;
-            let destMonth = parseInt(calendar.dataset.month, 10);
+                let dest = target(offset);
 
-            if (destYear < minYear) {
-                return;
+                if (!inRange(dest)) {
+                    return;
+                }
+
+                send(dest);
+            });
+        }
+    }
+
+    // Links and the number of months each one moves the calendar
+    function linkOffsets() {
+        return [
+            [prevYearLink, -12],
+            [prevMonthLink, -1],
+            [nextMonthLink, 1],
+            [nextYearLink, 12],
+        ];
+    }
+
+    // Year and month a number of months from the current calendar month
+    function target(offset) {
+        let index = parseInt(calendar.dataset.year, 10) * 12
+            + parseInt(calendar.dataset.month, 10) - 1 + offset;
+
+        return { year: Math.floor(index / 12), month: (index % 12) + 1 };
+    }
+
+    // Is the year and month within the range of event dates?
+    function inRange(date) {
+        let index = date.year * 12 + date.month;
+
+        return index >= minYear * 12 + minMonth && index <= maxYear * 12 + maxMonth;
+    }
+
+    // Update the link URLs for the current calendar month and hide links that
+    // would go beyond the earliest or latest event.
+    function updatePrevNextLinks() {
+        for (let [link, offset] of linkOffsets()) {
+            let dest = target(offset);
+
+            if (inRange(dest)) {
+                link.setAttribute('href', '?cgit-year=' + dest.year + '&cgit-month=' + dest.month);
+                link.style.display = '';
+            } else {
+                link.removeAttribute('href');
+                link.style.display = 'none';
             }
-
-            send({ year: destYear, month: destMonth });
-        });
-
-        prevMonthLink.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            let destYear = parseInt(calendar.dataset.year, 10);
-            let destMonth = parseInt(calendar.dataset.month, 10) - 1;
-
-            if (destMonth < 1) {
-                destYear = destYear - 1;
-                destMonth = 12;
-            }
-
-            if (destYear < minYear || (destYear === minYear && destMonth < minMonth)) {
-                return;
-            }
-
-            send({ year: destYear, month: destMonth });
-        });
-
-        nextYearLink.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            let destYear = parseInt(calendar.dataset.year, 10) + 1;
-            let destMonth = parseInt(calendar.dataset.month, 10);
-
-            if (destYear > maxYear) {
-                return;
-            }
-
-            send({ year: destYear, month: destMonth });
-        });
-
-        nextMonthLink.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            let destYear = parseInt(calendar.dataset.year, 10);
-            let destMonth = parseInt(calendar.dataset.month, 10) + 1;
-
-            if (destMonth > 12) {
-                destYear = destYear + 1;
-                destMonth = 1;
-            }
-
-            if (destYear > maxYear || (destYear === maxYear && destMonth > maxMonth)) {
-                return;
-            }
-
-            send({ year: destYear, month: destMonth });
-        });
+        }
     }
 });

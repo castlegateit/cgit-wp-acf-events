@@ -5,7 +5,13 @@
  */
 function cgit_events_scripts_init()
 {
-    wp_enqueue_script('cgit-events-calendar', plugins_url('/js/calendar.js', __FILE__));
+    wp_enqueue_script(
+        'cgit-events-calendar',
+        plugins_url('/js/calendar.js', __FILE__),
+        [],
+        CGIT_EVENTS_VERSION,
+        ['strategy' => 'defer']
+    );
 
     /**
      * Define the AJAX handler
@@ -28,14 +34,14 @@ add_action('wp_enqueue_scripts', 'cgit_events_scripts_init');
 function cgit_events_calendar_callback()
 {
     if (isset($_POST['year']) && isset($_POST['month'])) {
+        // Prevent infinite indexing of calendar pages by restricting display
+        // to the range of event dates
+        if (!cgit_wp_events_is_valid_calendar_date($_POST['year'], $_POST['month'])) {
+            wp_die('', '', ['response' => 404]);
+        }
+
         $year = (int)$_POST['year'];
         $month = (int)$_POST['month'];
-
-        // Prevent infinite indexing of calendar pages by restricting display
-        // to fifteen year in the past/future
-        if ($year > date('Y') + 15 || $year < date('Y') - 15) {
-            $year = date('Y');
-        }
 
         $calendar = new Cgit_event_calendar(
             $year,
